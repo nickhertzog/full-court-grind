@@ -1,1 +1,1 @@
-Clean source package. No node_modules, no dist, no package-lock. Includes all latest canvas/deploy fixes.
+Clean source package. Includes all latest fixes plus larger locker-room scroll area: h-[98dvh] and pb-2.
