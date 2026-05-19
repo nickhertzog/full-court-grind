@@ -1,1 +1,1 @@
-Not run in package step to avoid creating package-lock/node_modules. This package preserves the previous working Vite/Tailwind setup and only patches the ball centering transform.
+Not run during package step to avoid creating package-lock/node_modules. Clean Vite/Tailwind source package.

@@ -2,16 +2,7 @@
 
 GitHub/Vercel-ready export of Full Court Grind.
 
-## Run locally
-
-```bash
-npm install
-npm run dev
-```
-
 ## Deploy on Vercel
-
-Use Vercel defaults:
 
 - Framework Preset: Vite
 - Build Command: `npm run build`
