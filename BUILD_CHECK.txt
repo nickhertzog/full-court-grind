@@ -1,1 +1,1 @@
-Clean source package. No node_modules, no dist, no package-lock. Includes latest back-rim target and opaque save modal updates.
+Clean source package. No node_modules, no dist, no package-lock. Includes latest shot-target and flame-centering tuning.
