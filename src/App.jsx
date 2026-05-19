@@ -445,7 +445,7 @@ function SavedProgressIcon() {
         <div className="absolute left-1/2 top-[8px] h-[14px] w-[30px] -translate-x-1/2 rounded-sm border border-slate-900/70 bg-slate-200/95" />
         <div className="absolute left-[10px] top-[11px] h-[18px] w-[18px] rounded-[4px] bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.45)]" />
         <div className="absolute right-[10px] top-[11px] h-[18px] w-[10px] rounded-sm bg-orange-300/70" />
-        <div className="absolute inset-x-[11px] bottom-[11px] h-[16px] rounded-[5px] bg-slate-950/92 border border-white/5" />
+        <div className="absolute inset-x-[11px] bottom-[11px] h-[16px] rounded-[5px] bg-slate-950 border border-white/5" />
       </motion.div>
     </div>
   );
@@ -1033,7 +1033,7 @@ export default function BasketballGame() {
           <div className="absolute right-[-20%] top-[20%] h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
         </div>
 
-        <Card className="relative w-full h-[96dvh] border border-yellow-300/45 bg-slate-950/92 p-3 text-center shadow-[0_0_42px_rgba(250,204,21,0.18)] overflow-hidden flex flex-col">
+        <Card className="relative w-full h-[96dvh] border border-yellow-300/45 bg-slate-950 p-3 text-center shadow-[0_0_42px_rgba(250,204,21,0.18)] overflow-hidden flex flex-col">
           <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-yellow-300 via-orange-300 to-sky-300" />
           <div className="shrink-0 relative z-10">
             <CrownIcon />
@@ -1184,7 +1184,7 @@ export default function BasketballGame() {
           <div className="absolute left-[-25%] bottom-[-15%] h-72 w-72 rounded-full bg-orange-400/14 blur-3xl" />
           <div className="absolute right-[-25%] top-[10%] h-72 w-72 rounded-full bg-sky-400/14 blur-3xl" />
         </div>
-        <Card className="relative w-full border border-slate-700 bg-slate-950/88 p-5 text-center shadow-2xl overflow-hidden">
+        <Card className="relative w-full border border-slate-700 bg-slate-950 p-5 text-center shadow-2xl overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-sky-400 via-orange-300 to-amber-300" />
           <div className="relative z-10 pt-4">
             <MenuBasketball />
@@ -1223,7 +1223,7 @@ export default function BasketballGame() {
                       </button>
                     </div>
 
-                    <button type="button" onClick={() => setShowNewGamePrompt(false)} className="mt-3 w-full rounded-[22px] border border-slate-700 bg-slate-950/90 px-4 py-3 text-[12px] font-black uppercase tracking-[0.26em] text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900 active:scale-[0.985]">Cancel</button>
+                    <button type="button" onClick={() => setShowNewGamePrompt(false)} className="mt-3 w-full rounded-[22px] border border-slate-700 bg-slate-950 px-4 py-3 text-[12px] font-black uppercase tracking-[0.26em] text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900 active:scale-[0.985]">Cancel</button>
                   </>
                 ) : (
                   <>
@@ -1353,21 +1353,21 @@ export default function BasketballGame() {
                 transition={{ duration: 2.05, times: [0, 0.2, 0.45, 0.65, 1] }}
                 className="absolute inset-0 border-y-4 border-cyan-200/35"
               />
-              <motion.div initial={{ scale: 0.72, rotate: -5, y: 16 }} animate={{ scale: [0.72, 1.08, 1, 1, 0.96], rotate: [-5, 2, 0, 0, 0], y: [16, -4, 0, 0, 0] }} transition={{ duration: 1.75, ease: "easeOut" }} className="relative rounded-3xl border-4 border-cyan-100/85 bg-slate-950/92 px-5 py-4 text-center shadow-[0_0_38px_rgba(34,211,238,0.85)]">
+              <motion.div initial={{ scale: 0.72, rotate: -5, y: 16 }} animate={{ scale: [0.72, 1.08, 1, 1, 0.96], rotate: [-5, 2, 0, 0, 0], y: [16, -4, 0, 0, 0] }} transition={{ duration: 1.75, ease: "easeOut" }} className="relative rounded-3xl border-4 border-cyan-100/85 bg-slate-950 px-5 py-4 text-center shadow-[0_0_38px_rgba(34,211,238,0.85)]">
                 <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-cyan-100/80 bg-cyan-400/20 text-3xl">📋</div>
                 <p className="text-[10px] uppercase tracking-[0.24em] font-black text-cyan-200">Coach’s Challenge</p>
                 <p className="mt-1 text-4xl font-black leading-none text-white">OVERTURNED</p>
               </motion.div>
             </motion.div>}</AnimatePresence>{challengeOffer?.isFinalShot && !courtTripOver && <div className="absolute inset-x-0 bottom-20 z-[72] flex justify-center pointer-events-none">
-              <button type="button" onClick={passCoachChallenge} className="pointer-events-auto rounded-2xl border-2 border-slate-300/70 bg-slate-950/90 px-6 py-3 text-sm font-black uppercase tracking-wide text-slate-100 shadow-[0_0_22px_rgba(15,23,42,0.9)] active:scale-[0.96]">
+              <button type="button" onClick={passCoachChallenge} className="pointer-events-auto rounded-2xl border-2 border-slate-300/70 bg-slate-950 px-6 py-3 text-sm font-black uppercase tracking-wide text-slate-100 shadow-[0_0_22px_rgba(15,23,42,0.9)] active:scale-[0.96]">
                 End Round
               </button>
-            </div>}<AnimatePresence>{lockedPrompt && <motion.div key={lockedPrompt.key} initial={{ opacity: 0, y: 12, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }} transition={{ duration: 0.22 }} className="absolute inset-x-0 bottom-28 z-[85] flex justify-center pointer-events-none">
-              <div className="rounded-2xl border border-slate-500/70 bg-slate-950/92 px-4 py-2 text-center text-sm font-black text-slate-100 shadow-[0_0_18px_rgba(15,23,42,0.85)] backdrop-blur-sm">
+            </div>}<AnimatePresence>{lockedPrompt && <motion.div key={lockedPrompt.key} initial={{ opacity: 0, y: 12, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }} transition={{ duration: 0.22 }} className="absolute inset-x-0 bottom-28 z-[120] flex justify-center pointer-events-none">
+              <div className="rounded-2xl border-2 border-slate-300 bg-slate-950 px-4 py-2 text-center text-sm font-black text-white shadow-[0_0_26px_rgba(0,0,0,1)]">
                 Purchase in Locker Room
               </div>
             </motion.div>}</AnimatePresence>{courtTripOver && <motion.div initial={{ opacity: 0, y: 18, scale: 0.82 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 190, damping: 14 }} className="absolute inset-x-4 top-[260px] z-[70] flex justify-center pointer-events-none">
-              <div className="w-full max-w-[340px] rounded-3xl border-2 border-white/25 bg-slate-950/90 px-5 py-4 text-center shadow-[0_0_34px_rgba(15,23,42,0.95)] backdrop-blur-sm">
+              <div className="w-full max-w-[340px] rounded-3xl border-2 border-white/25 bg-slate-950 px-5 py-4 text-center shadow-[0_0_34px_rgba(15,23,42,0.95)] backdrop-blur-sm">
                 <p className="text-[10px] uppercase tracking-[0.24em] font-black text-slate-400">Round Total</p>
                 <p className="mt-1 text-5xl font-black leading-none text-green-300 drop-shadow-[0_0_14px_rgba(134,239,172,0.65)]">+{formatNumber(tripPointsEarned)}</p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-slate-400">pts earned</p>
@@ -1376,7 +1376,7 @@ export default function BasketballGame() {
                   <button type="button" onClick={goLockerRoom} className="pointer-events-auto rounded-2xl border-2 border-sky-200/80 bg-sky-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(14,165,233,0.55)] active:scale-[0.97]">Hit the Showers</button>
                 </div>
               </div>
-            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950/92 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-1 mt-1">
+            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-1 mt-1">
             
             <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
               <p className="text-[9px] uppercase tracking-wide font-black leading-none opacity-80">{upgrades.coachChallenge > 0 ? "📋 Challenge the Play" : "Challenge the Play"}</p>
