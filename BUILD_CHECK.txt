@@ -1,1 +1,1 @@
-Clean source package. Includes final info popup behavior, compact locker room, autosave title skip, and all previous animation/flame/Safari fixes.
+Newest clean source package. Includes final info popup behavior, compact locker room, autosave title skip, solid continue-save screen, solid locked Ask Coach popup, and all previous animation/flame/Safari fixes.
