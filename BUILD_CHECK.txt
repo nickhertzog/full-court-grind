@@ -1,1 +1,1 @@
-Clean source package. No node_modules, no dist, no package-lock. Includes midpoint make target y=7.0.
+Clean source package. Transform-stable shot animation: outer layer moves only, inner ball scales/fades.
