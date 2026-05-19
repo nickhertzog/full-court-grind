@@ -1201,43 +1201,43 @@ export default function BasketballGame() {
             {saveStatus && <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300">{saveStatus}</p>}
           </div>
           {showNewGamePrompt && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/84 backdrop-blur-sm px-4">
-              <div className="w-full max-w-[345px] rounded-[30px] border border-sky-300/25 bg-slate-900/96 p-5 text-center shadow-[0_0_28px_rgba(14,165,233,0.14)]">
+            <div className="absolute inset-0 z-[999] flex items-center justify-center bg-slate-950 px-4">
+              <div className="w-full max-w-[345px] rounded-[30px] border-2 border-sky-300 bg-slate-950 p-5 text-center shadow-[0_0_42px_rgba(0,0,0,1),0_0_30px_rgba(14,165,233,0.28)]">
                 <SavedProgressIcon />
 
                 {!confirmFreshStart ? (
                   <>
                     <p className="mt-4 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300">Saved Progress</p>
                     <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Continue From Last Save?</h3>
-                    <p className="mt-3 text-[15px] font-bold leading-snug text-slate-300">We noticed saved progress on this device.</p>
+                    <p className="mt-3 text-[15px] font-bold leading-snug text-slate-200">We noticed saved progress on this device.</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-3">
-                      <button type="button" onClick={resumeGame} className="rounded-[24px] border border-emerald-100/35 bg-gradient-to-b from-emerald-400 to-emerald-600 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(16,185,129,0.32),inset_0_1px_0_rgba(255,255,255,0.22)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
+                      <button type="button" onClick={resumeGame} className="rounded-[24px] border-2 border-emerald-100 bg-emerald-500 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(16,185,129,0.35)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
                         <div className="text-lg font-black uppercase tracking-[0.12em]">Yes</div>
-                        <div className="mt-1 text-[11px] font-bold leading-snug text-emerald-50/95">Resume save</div>
+                        <div className="mt-1 text-[11px] font-bold leading-snug text-emerald-50">Resume save</div>
                       </button>
 
-                      <button type="button" onClick={() => setConfirmFreshStart(true)} className="rounded-[24px] border border-slate-500/60 bg-gradient-to-b from-slate-700 to-slate-900 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(15,23,42,0.42),inset_0_1px_0_rgba(255,255,255,0.12)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
+                      <button type="button" onClick={() => setConfirmFreshStart(true)} className="rounded-[24px] border-2 border-slate-400 bg-slate-800 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(0,0,0,0.55)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
                         <div className="text-lg font-black uppercase tracking-[0.12em]">No</div>
-                        <div className="mt-1 text-[11px] font-bold leading-snug text-slate-300">Start over</div>
+                        <div className="mt-1 text-[11px] font-bold leading-snug text-slate-200">Start over</div>
                       </button>
                     </div>
 
-                    <button type="button" onClick={() => setShowNewGamePrompt(false)} className="mt-3 w-full rounded-[22px] border border-slate-700 bg-slate-950 px-4 py-3 text-[12px] font-black uppercase tracking-[0.26em] text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900 active:scale-[0.985]">Cancel</button>
+                    <button type="button" onClick={() => setShowNewGamePrompt(false)} className="mt-3 w-full rounded-[22px] border-2 border-slate-500 bg-slate-900 px-4 py-3 text-[12px] font-black uppercase tracking-[0.26em] text-slate-300 shadow-[0_8px_18px_rgba(0,0,0,0.55)] transition hover:bg-slate-800 active:scale-[0.985]">Cancel</button>
                   </>
                 ) : (
                   <>
                     <p className="mt-4 text-[10px] font-black uppercase tracking-[0.28em] text-red-300">Fresh Game</p>
                     <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Are You Sure?</h3>
-                    <p className="mt-3 rounded-2xl border border-red-400/25 bg-red-950/25 px-3 py-2 text-[13px] font-black leading-snug text-red-100">This will erase your saved progress on this device.</p>
-                    <p className="mt-2 text-[14px] font-bold leading-snug text-slate-300">This will be a fresh game.</p>
+                    <p className="mt-3 rounded-2xl border-2 border-red-400 bg-red-950 px-3 py-2 text-[13px] font-black leading-snug text-red-100">This will erase your saved progress on this device.</p>
+                    <p className="mt-2 text-[14px] font-bold leading-snug text-slate-200">This will be a fresh game.</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-3">
-                      <button type="button" onClick={() => setConfirmFreshStart(false)} className="rounded-[24px] border border-slate-600 bg-gradient-to-b from-slate-700 to-slate-900 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(15,23,42,0.42),inset_0_1px_0_rgba(255,255,255,0.12)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
+                      <button type="button" onClick={() => setConfirmFreshStart(false)} className="rounded-[24px] border-2 border-slate-500 bg-slate-800 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(0,0,0,0.55)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
                         <div className="text-sm font-black uppercase tracking-[0.12em]">Go Back</div>
                       </button>
 
-                      <button type="button" onClick={beginFreshGame} className="rounded-[24px] border border-red-100/35 bg-gradient-to-b from-rose-400 to-red-500 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(239,68,68,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
+                      <button type="button" onClick={beginFreshGame} className="rounded-[24px] border-2 border-red-100 bg-red-500 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(239,68,68,0.32)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
                         <div className="text-sm font-black uppercase tracking-[0.12em]">Fresh Game</div>
                       </button>
                     </div>
