@@ -1,1 +1,1 @@
-Clean source package. No node_modules, no dist, no package-lock. Includes x=50 make target and center drop tuning.
+Clean source package. No node_modules, no dist, no package-lock. Includes x=49 make target/drop tuning.
