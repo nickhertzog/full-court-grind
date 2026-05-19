@@ -265,7 +265,7 @@ function HotHandFire() {
         transition={{ duration: 0.42, repeat: Infinity, ease: "easeInOut" }}
         className="absolute inset-0 flex items-center justify-center text-[72px] leading-none drop-shadow-[0_0_12px_rgba(249,115,22,0.65)]"
       >
-        <span className="block translate-y-[2px]">🔥</span>
+        <span className="block -translate-y-[8px]">🔥</span>
       </motion.div>
     </div>
   );
