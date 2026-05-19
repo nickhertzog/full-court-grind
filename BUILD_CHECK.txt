@@ -1,1 +1,1 @@
-Not run during package step to avoid creating package-lock/node_modules. Clean Vite/Tailwind source package.
+Clean source package. No node_modules, no dist, no package-lock. Includes back-rim make target update.
