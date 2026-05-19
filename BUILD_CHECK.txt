@@ -1,1 +1,1 @@
-Clean source package. Includes all latest fixes plus larger locker-room scroll area: h-[98dvh] and pb-2.
+Clean source package. Includes all latest fixes plus larger locker-room scroll area: h-[100dvh], p-2.5, and pb-0.
