@@ -18,7 +18,7 @@ const RIM_SAVE_DEFLECT_RIGHT = { x: 52.8, y: 9.0 };
 const RIM_SAVE_DEFLECT_LEFT = { x: 47.2, y: 9.0 };
 const RIM_SAVE_CENTER = { x: 50.2, y: 5.8 };
 const RIM_DROP_Y = 11.5;
-const BACK_RIM_TARGET = { x: 49.5, y: 3.8 };
+const BACK_RIM_TARGET = { x: 50, y: 3.8 };
 const MAKE_DROP_TARGET = { x: 50, y: 11.5 };
 const PLAYOFF_BACK_RIM_TARGET = { x: 50, y: 24.2 };
 
