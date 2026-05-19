@@ -1,24 +1,25 @@
 # Full Court Grind
 
-A Vite + React build of Full Court Grind, ready for GitHub and Vercel.
+Vite + React build of Full Court Grind.
 
-## Local setup
+## Local dev
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Production test
+## Production build
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Vercel settings
+## Vercel
 
-- Framework Preset: Vite
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Install Command: `npm install`
+Framework preset: Vite  
+Build command: `npm run build`  
+Output directory: `dist`
+
+This version locks the app to an Inter/system UI font stack to better match the Canvas preview typography.

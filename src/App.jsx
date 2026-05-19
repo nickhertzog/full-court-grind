@@ -202,7 +202,7 @@ function shotBallSize(points) {
   if (points >= 250) return "h-10 w-10";
   return "h-9 w-9";
 }
-function Shell({ children }) { return <div className="min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-md min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
+function Shell({ children }) { return <div className="font-sans antialiased min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-md min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
 function Card({ children, className = "", ...props }) { return <div className={`rounded-3xl shadow-2xl ${className}`} {...props}>{children}</div>; }
 function UpgradeButton({ children, disabled, onClick, className = "" }) { return <button type="button" disabled={disabled} onClick={onClick} className={`${className} disabled:cursor-not-allowed transition active:scale-[0.98]`}>{children}</button>; }
 
