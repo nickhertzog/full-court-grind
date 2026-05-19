@@ -1,0 +1,15 @@
+BUILD OK
+
+> full-court-grind@1.0.0 build
+> vite build
+
+[36mvite v8.0.13 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...[32m✓[39m 416 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[0m[32mindex.html                 [39m[2m[1m  0.47 kB[0m[0m[2m │ gzip:   0.30 kB[0m
+[2mdist/[0m[2massets/[0m[35mindex-DfJYEE7-.css  [39m[2m[1m 69.37 kB[0m[0m[2m │ gzip:  10.35 kB[0m
+[2mdist/[0m[2massets/[0m[36mindex-Dr8ACHwN.js   [39m[2m[1m409.68 kB[0m[0m[2m │ gzip: 121.92 kB[0m
+
+[32m✓ built in 1.38s[39m

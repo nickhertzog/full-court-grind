@@ -1,8 +1,8 @@
 # Full Court Grind
 
-Canvas-parity Vite + React build of Full Court Grind.
+GitHub/Vercel-ready export of Full Court Grind.
 
-## Local run
+## Run locally
 
 ```bash
 npm install
@@ -11,11 +11,11 @@ npm run dev
 
 ## Deploy on Vercel
 
-Use the defaults:
+Use Vercel defaults:
 
 - Framework Preset: Vite
-- Build Command: npm run build
-- Output Directory: dist
+- Build Command: `npm run build`
+- Output Directory: `dist`
 
 ## Save behavior
 
