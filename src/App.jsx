@@ -18,7 +18,7 @@ const RIM_SAVE_DEFLECT_RIGHT = { x: 52.8, y: 9.0 };
 const RIM_SAVE_DEFLECT_LEFT = { x: 47.2, y: 9.0 };
 const RIM_SAVE_CENTER = { x: 50.2, y: 5.8 };
 const RIM_DROP_Y = 11.5;
-const BACK_RIM_TARGET = { x: 50, y: 6.7 };
+const BACK_RIM_TARGET = { x: 50, y: 3.8 };
 const PLAYOFF_BACK_RIM_TARGET = { x: 50, y: 24.2 };
 
 const EXTRA_BALL_COSTS = [2, 8, 25, 70, 180, 400, 900];
@@ -1055,8 +1055,8 @@ export default function BasketballGame() {
             {saveStatus && <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300">{saveStatus}</p>}
           </div>
           {showNewGamePrompt && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/84 backdrop-blur-sm px-4">
-              <div className="w-full max-w-[345px] rounded-[30px] border border-sky-300/25 bg-slate-900/96 p-5 text-center shadow-[0_0_28px_rgba(14,165,233,0.14)]">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/96 backdrop-blur-md px-4">
+              <div className="w-full max-w-[345px] rounded-[30px] border border-sky-300/40 bg-slate-950 p-5 text-center shadow-[0_0_28px_rgba(14,165,233,0.14)]">
                 <SavedProgressIcon />
 
                 {!confirmFreshStart ? (
