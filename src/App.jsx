@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TROPHY_COST = 100000;
@@ -221,21 +221,124 @@ function StatBox({ label, value, color = "text-white", maxed = false, valueSize 
       ? "bg-gradient-to-br from-yellow-200/25 via-white/14 to-yellow-950/70 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.58)]"
       : "bg-emerald-950/70 border-emerald-300/70 shadow-[0_0_16px_rgba(52,211,153,0.42)]"
     : "bg-slate-900/80 border-slate-700";
-  return <div onClick={onClick} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">{label}</p><p className={`mt-1 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
+  return <div onClick={onClick} className={`h-[44px] rounded-lg border px-1 py-0.5 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className="text-[7px] uppercase tracking-wide text-slate-500 font-black leading-none">{label}</p><p className={`mt-0.5 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
 }
 
 function SingleTrackUpgradeCard({ title, theme = "lab", label, current, add, cost, level, max, onBuy, currentPoints, note = null, locked = false }) {
   const [showNote, setShowNote] = useState(false);
+  const [noteAnchorY, setNoteAnchorY] = useState(0);
+  const holdTimer = useRef(null);
   const t = THEME[theme] || THEME.lab;
   const maxed = level >= max;
   const disabled = currentPoints < cost;
   const buttonClass = maxed ? "bg-emerald-700/40 text-emerald-200" : disabled ? "bg-slate-800 text-slate-500" : t.button;
+  const popupShiftClass = "translate-y-0";
+  const noteTitle = note?.includes(":") ? note.split(":")[0] : "Info";
+  const noteBody = note?.includes(":") ? note.slice(note.indexOf(":") + 1).trim() : note;
 
-  if (locked) {
-    return <div className={`col-span-2 rounded-xl border shadow-sm p-3.5 ${t.card} relative overflow-hidden ${showNote ? "min-h-[205px]" : "min-h-[154px]"}`}><div className="absolute inset-0 bg-slate-950/45 z-0" /><div className="relative z-10 flex items-center justify-between gap-2"><div className="flex items-center gap-2 min-w-0"><span className="text-sm">🔒</span><p className={`text-base font-black leading-tight ${t.title}`}>{title}</p></div>{note && <button type="button" onClick={() => setShowNote((v) => !v)} className="w-6 h-6 rounded-full bg-slate-950/80 border border-slate-700 text-[13px] font-black italic text-slate-300">i</button>}</div>{note && showNote && <p className="relative z-30 mt-2 rounded-lg bg-slate-950/95 border border-slate-500 px-3 py-2 text-[12px] leading-snug text-slate-100 shadow-xl">{note}</p>}<div className="relative z-10 mt-2 rounded-xl bg-slate-950/45 border border-slate-800 px-3 py-3 opacity-55"><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">{label}</p><p className="text-sm font-black text-slate-300 mt-1 leading-tight">{current}</p><div className="mt-3 flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-800 overflow-hidden border border-slate-700" /><p className="text-[10px] font-black text-slate-400 w-10 text-right">0/{max}</p></div><p className="text-xs font-black mt-1 text-slate-400">{add}</p></div><div className={`${showNote ? "relative z-20 mt-3" : "absolute inset-x-0 top-16 bottom-3 z-20"} flex items-center justify-center pointer-events-none`}><button type="button" onClick={onBuy} disabled={disabled} className={`pointer-events-auto w-24 h-[88px] rounded-2xl border-2 text-xs font-black shadow-xl transition active:scale-[0.98] ${disabled ? "bg-slate-800 border-slate-700 text-slate-500" : `${t.button} border-white/30`}`}><div className="flex h-full w-full flex-col items-center justify-center"><span className="text-2xl">{title === "Coach’s Challenge" ? "📋" : "🔒"}</span><span>{title === "Coach’s Challenge" ? "Bribe the Refs" : "Unlock"}</span><span className="text-sm mt-1">{formatNumber(cost)} pts</span></div></button></div></div>;
+  function startInfoHold(event) {
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    clearTimeout(holdTimer.current);
+    holdTimer.current = window.setTimeout(() => {
+      setNoteAnchorY(Math.max(12, rect.top));
+      setShowNote(true);
+    }, 100);
   }
 
-  return <div className={`col-span-2 rounded-xl border shadow-sm p-3.5 ${maxed ? "bg-emerald-950/40 border-emerald-500/50" : t.card}`}><div className="flex items-center justify-between gap-2"><p className={`text-base font-black leading-tight ${maxed ? "text-emerald-200" : t.title}`}>{title}</p>{note && <button type="button" onClick={() => setShowNote((v) => !v)} className="w-6 h-6 rounded-full bg-slate-950/80 border border-slate-700 text-[13px] font-black italic text-slate-300">i</button>}</div>{note && showNote && <p className="mt-2 rounded-lg bg-slate-950/80 border border-slate-700 px-3 py-2 text-[12px] leading-snug text-slate-100">{note}</p>}<div className="mt-2 rounded-xl bg-slate-950/70 border border-slate-800 px-3 py-2"><div className="flex items-center justify-between gap-2"><div><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">{label}</p><p className="text-sm font-black text-slate-100 mt-1 leading-tight">{current}</p></div><UpgradeButton onClick={onBuy} disabled={disabled || maxed} className={`rounded-lg px-3 py-1.5 text-[11px] font-black ${buttonClass}`}>{maxed ? "Maxed" : `Upgrade ${formatNumber(cost)} pts`}</UpgradeButton></div><div className="mt-2 flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-800 overflow-hidden border border-slate-700"><div className={`h-full rounded-full ${t.bar}`} style={{ width: `${Math.min(100, (level / max) * 100)}%` }} /></div><p className="text-[10px] font-black text-slate-300 w-10 text-right">{level}/{max}</p></div><p className={`text-xs font-black mt-1 ${maxed ? "text-emerald-300" : t.add}`}>{maxed ? "Maxed" : add}</p></div></div>;
+  function stopInfoHold(event) {
+    event?.preventDefault?.();
+    clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setShowNote(false);
+  }
+
+  const infoHandlers = note
+    ? {
+        onPointerDown: startInfoHold,
+        onPointerUp: stopInfoHold,
+        onPointerCancel: stopInfoHold,
+        onTouchStart: startInfoHold,
+        onTouchEnd: stopInfoHold,
+        onTouchCancel: stopInfoHold,
+        onContextMenu: (event) => event.preventDefault(),
+      }
+    : {};
+
+  const InfoButton = note ? (
+    <button
+      type="button"
+      {...infoHandlers}
+      className="absolute right-0 top-0 z-30 inline-flex h-11 w-11 select-none touch-none items-start justify-end rounded-xl pr-2 pt-2 text-[12px] font-black italic leading-none text-slate-300 active:scale-95 before:absolute before:right-2 before:top-2 before:h-6 before:w-6 before:rounded-full before:border before:border-slate-600 before:bg-slate-950/85 before:shadow-sm"
+    >
+      <span className="relative z-10 flex h-6 w-6 items-center justify-center">i</span>
+    </button>
+  ) : null;
+
+  const InfoPopup = note && showNote ? (
+    <div
+      className={`fixed left-[43%] w-[min(300px,calc(100vw-56px))] -translate-x-1/2 ${popupShiftClass} select-none rounded-2xl border border-sky-300/30 bg-slate-950/98 px-4 py-3 text-left text-[12px] font-medium leading-snug text-slate-100 whitespace-pre-line shadow-[0_0_28px_rgba(0,0,0,0.88),0_0_16px_rgba(14,165,233,0.16)] backdrop-blur-md pointer-events-none`}
+      style={{ top: `${noteAnchorY}px`, zIndex: 2147483647, WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
+    >
+      <span className={`font-black ${t.title}`}>{noteTitle}:</span> {noteBody}
+    </div>
+  ) : null;
+
+  if (locked) {
+    return (
+      <div className={`relative col-span-2 rounded-xl border shadow-sm p-2.5 ${t.card} min-h-[142px]`}>
+        <div className="absolute inset-0 bg-slate-950/45 z-0" />
+        {InfoPopup}
+        {InfoButton}
+        <div className="relative z-10 flex items-center gap-2 min-w-0 pr-8">
+          <span className="text-sm">🔒</span>
+          <p className={`text-[15px] font-black leading-tight ${t.title}`}>{title}</p>
+        </div>
+        <div className="relative z-10 mt-1.5 rounded-xl bg-slate-950/45 border border-slate-800 px-2.5 py-2 opacity-55">
+          <p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">{label}</p>
+          <p className="text-sm font-black text-slate-300 mt-1 leading-tight">{current}</p>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="h-2 flex-1 rounded-full bg-slate-800 overflow-hidden border border-slate-700" />
+            <p className="text-[10px] font-black text-slate-400 w-10 text-right">0/{max}</p>
+          </div>
+          <p className="text-xs font-black mt-1 text-slate-400">{add}</p>
+        </div>
+        <div className="absolute inset-x-0 top-16 bottom-3 z-20 flex items-center justify-center pointer-events-none">
+          <button type="button" onClick={onBuy} disabled={disabled} className={`pointer-events-auto w-24 h-[88px] rounded-2xl border-2 text-xs font-black shadow-xl transition active:scale-[0.98] ${disabled ? "bg-slate-800 border-slate-700 text-slate-500" : `${t.button} border-white/30`}`}>
+            <div className="flex h-full w-full flex-col items-center justify-center">
+              <span className="text-2xl">{title === "Coach’s Challenge" ? "📋" : "🔒"}</span>
+              <span>{title === "Coach’s Challenge" ? "Bribe the Refs" : "Unlock"}</span>
+              <span className="text-sm mt-1">{formatNumber(cost)} pts</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative col-span-2 rounded-xl border shadow-sm p-2.5 ${maxed ? "bg-emerald-950/40 border-emerald-500/50" : t.card}`}>
+      {InfoPopup}
+      {InfoButton}
+      <div className="flex items-center gap-2 min-w-0 pr-8">
+        <p className={`text-[15px] font-black leading-tight ${maxed ? "text-emerald-200" : t.title}`}>{title}</p>
+      </div>
+      <div className="mt-1.5 rounded-xl bg-slate-950/70 border border-slate-800 px-2.5 py-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">{label}</p>
+            <p className="text-sm font-black text-slate-100 mt-1 leading-tight">{current}</p>
+          </div>
+          <UpgradeButton onClick={onBuy} disabled={disabled || maxed} className={`rounded-lg px-3 py-1.5 text-[11px] font-black ${buttonClass}`}>{maxed ? "Maxed" : `Upgrade ${formatNumber(cost)} pts`}</UpgradeButton>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <div className="h-2 flex-1 rounded-full bg-slate-800 overflow-hidden border border-slate-700"><div className={`h-full rounded-full ${t.bar}`} style={{ width: `${Math.min(100, (level / max) * 100)}%` }} /></div>
+          <p className="text-[10px] font-black text-slate-300 w-10 text-right">{level}/{max}</p>
+        </div>
+        <p className={`text-xs font-black mt-1 ${maxed ? "text-emerald-300" : t.add}`}>{maxed ? "Maxed" : add}</p>
+      </div>
+    </div>
+  );
 }
 
 function ShotUpgradeCard({ title, theme = "lab", accuracyCurrent, accuracyAdd, accuracyCost, accuracyLevel, accuracyMax, onBuyAccuracy, valueCurrent, valueAdd, valueCost, valueLevel, valueMax, onBuyValue, currentPoints, locked = false, unlockCost = 0, onUnlock = null }) {
@@ -247,14 +350,14 @@ function ShotUpgradeCard({ title, theme = "lab", accuracyCurrent, accuracyAdd, a
   };
 
   if (locked) {
-    return <div className={`col-span-2 rounded-xl border shadow-sm p-3.5 ${t.card} relative overflow-hidden min-h-[210px]`}><div className="absolute inset-0 bg-slate-950/45 z-0" /><p className={`relative z-10 text-base font-black leading-tight ${t.title}`}>{title}</p><div className="relative z-10 mt-2 grid grid-cols-1 gap-2 opacity-50"><div className="rounded-xl bg-slate-950/45 border border-slate-800 px-3 py-2"><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">Make Chance</p><p className="text-sm font-black text-slate-300 mt-1 leading-tight">{accuracyCurrent}</p><div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700" /><p className="text-xs font-black mt-1 text-slate-400">{accuracyAdd}</p></div><div className="rounded-xl bg-slate-950/45 border border-slate-800 px-3 py-2"><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">Shot Value</p><p className="text-sm font-black text-slate-300 mt-1 leading-tight">{valueCurrent}</p><div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700" /><p className="text-xs font-black mt-1 text-slate-400">{valueAdd}</p></div></div><div className="absolute inset-x-0 top-14 bottom-2 z-20 flex items-center justify-center pointer-events-none"><button type="button" onClick={onUnlock} disabled={currentPoints < unlockCost} className={`pointer-events-auto w-28 h-28 rounded-3xl border-2 text-sm font-black shadow-xl transition active:scale-[0.98] ${currentPoints < unlockCost ? "bg-slate-800 border-slate-700 text-slate-500" : `${t.button} border-white/30`}`}><div className="flex h-full w-full flex-col items-center justify-center"><span className="text-2xl">{title === "Coach’s Challenge" ? "📋" : "🔒"}</span><span>Unlock</span><span className="text-sm mt-1">{formatNumber(unlockCost)} pts</span></div></button></div></div>;
+    return <div className={`col-span-2 rounded-xl border shadow-sm p-2.5 ${t.card} relative overflow-hidden min-h-[196px]`}><div className="absolute inset-0 bg-slate-950/45 z-0" /><p className={`relative z-10 text-base font-black leading-tight ${t.title}`}>{title}</p><div className="relative z-10 mt-2 grid grid-cols-1 gap-2 opacity-50"><div className="rounded-xl bg-slate-950/45 border border-slate-800 px-3 py-2"><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">Make Chance</p><p className="text-sm font-black text-slate-300 mt-1 leading-tight">{accuracyCurrent}</p><div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700" /><p className="text-xs font-black mt-1 text-slate-400">{accuracyAdd}</p></div><div className="rounded-xl bg-slate-950/45 border border-slate-800 px-3 py-2"><p className="text-[10px] uppercase tracking-wide text-slate-500 leading-none">Shot Value</p><p className="text-sm font-black text-slate-300 mt-1 leading-tight">{valueCurrent}</p><div className="mt-2 h-2 rounded-full bg-slate-800 border border-slate-700" /><p className="text-xs font-black mt-1 text-slate-400">{valueAdd}</p></div></div><div className="absolute inset-x-0 top-14 bottom-2 z-20 flex items-center justify-center pointer-events-none"><button type="button" onClick={onUnlock} disabled={currentPoints < unlockCost} className={`pointer-events-auto w-28 h-28 rounded-3xl border-2 text-sm font-black shadow-xl transition active:scale-[0.98] ${currentPoints < unlockCost ? "bg-slate-800 border-slate-700 text-slate-500" : `${t.button} border-white/30`}`}><div className="flex h-full w-full flex-col items-center justify-center"><span className="text-2xl">{title === "Coach’s Challenge" ? "📋" : "🔒"}</span><span>Unlock</span><span className="text-sm mt-1">{formatNumber(unlockCost)} pts</span></div></button></div></div>;
   }
 
-  return <div className={`col-span-2 rounded-xl border shadow-sm p-3.5 ${t.card}`}><p className={`text-base font-black leading-tight ${t.title}`}>{title}</p><div className="mt-2 grid grid-cols-1 gap-2"><Row label="Make Chance" current={accuracyCurrent} add={accuracyAdd} cost={accuracyCost} level={accuracyLevel} max={accuracyMax} onBuy={onBuyAccuracy} /><Row label="Shot Value" current={valueCurrent} add={valueAdd} cost={valueCost} level={valueLevel} max={valueMax} onBuy={onBuyValue} /></div></div>;
+  return <div className={`col-span-2 rounded-xl border shadow-sm p-2.5 ${t.card}`}><p className={`text-base font-black leading-tight ${t.title}`}>{title}</p><div className="mt-2 grid grid-cols-1 gap-2"><Row label="Make Chance" current={accuracyCurrent} add={accuracyAdd} cost={accuracyCost} level={accuracyLevel} max={accuracyMax} onBuy={onBuyAccuracy} /><Row label="Shot Value" current={valueCurrent} add={valueAdd} cost={valueCost} level={valueLevel} max={valueMax} onBuy={onBuyValue} /></div></div>;
 }
 
 function TrophyCard({ title, text, buttonText, disabled, maxed, onClick, className, titleClassName, buttonClassName }) {
-  return <div className={`col-span-2 rounded-xl border shadow-sm p-3.5 ${className}`}><p className={`text-base font-black ${titleClassName}`}>{title}</p>{text ? <p className="mt-1 text-[11px] leading-snug text-slate-300">{text}</p> : null}<button type="button" disabled={disabled || maxed} onClick={onClick} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${maxed ? "bg-emerald-700/40 text-emerald-200" : disabled ? "bg-slate-800 text-slate-500" : buttonClassName}`}>{maxed ? "Claimed" : buttonText}</button></div>;
+  return <div className={`col-span-2 rounded-xl border shadow-sm p-2.5 ${className}`}><p className={`text-base font-black ${titleClassName}`}>{title}</p>{text ? <p className="mt-1 text-[11px] leading-snug text-slate-300">{text}</p> : null}<button type="button" disabled={disabled || maxed} onClick={onClick} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${maxed ? "bg-emerald-700/40 text-emerald-200" : disabled ? "bg-slate-800 text-slate-500" : buttonClassName}`}>{maxed ? "Claimed" : buttonText}</button></div>;
 }
 
 function HotHandFire() {
@@ -565,9 +668,10 @@ export default function BasketballGame() {
 
   useEffect(() => {
     if (!autoSaveReady) return;
+    if (screen === "title") return;
     const timeout = window.setTimeout(() => saveGame(true), 250);
     return () => window.clearTimeout(timeout);
-  }, [autoSaveReady, currentPoints, startingPoints, upgrades, hasWon, bestStreak, courtRound, shotHistory, careerStats]);
+  }, [autoSaveReady, screen, currentPoints, startingPoints, upgrades, hasWon, bestStreak, courtRound, shotHistory, careerStats]);
 
   const shotsPerTrip = 2 + upgrades.extraShots;
   const shotsRemaining = Math.max(0, shotsPerTrip - attemptsUsed);
@@ -912,11 +1016,11 @@ export default function BasketballGame() {
     { type: "singleTrack", key: "extraShots", theme: "possessions", title: "Extra Balls", label: "Balls Per Turn", current: `${shotsPerTrip} balls`, add: "+1 ball", cost: EXTRA_BALL_COSTS[upgrades.extraShots] || 0, level: upgrades.extraShots, max: EXTRA_BALL_COSTS.length, action: () => buyUpgrade("extraShots", EXTRA_BALL_COSTS[upgrades.extraShots], EXTRA_BALL_COSTS.length) },
     ...Object.values(SHOT_CONFIG).map((shot) => ({ type: "shotUpgrade", key: `${shot.id}Bundle`, title: shot.label, locked: shot.id !== "layup" && !upgrades[`${shot.id}Unlocked`], unlockCost: shot.unlockCost, unlockAction: () => unlockShot(shot.id), accuracyCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotOdds(shot.id)}%` : "Locked", accuracyAdd: "+5% make", accuracyCost: shot.costs[upgrades[shot.id]] || 0, accuracyLevel: upgrades[shot.id], accuracyMax: shot.costs.length, accuracyAction: () => buyUpgrade(shot.id, shot.costs[upgrades[shot.id]], shot.costs.length), valueCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotValue(shot)} pts` : "Locked", valueAdd: `+${shot.points} pts`, valueCost: SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]] || 0, valueLevel: upgrades[`${shot.id}Specialist`], valueMax: SPECIALIST_LEVEL_CAPS[shot.id], valueAction: () => buyUpgrade(`${shot.id}Specialist`, SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]], SPECIALIST_LEVEL_CAPS[shot.id]) })),
     { type: "section", title: "Bonus Stuff", theme: "neutral" },
-    { type: "singleTrack", key: "hotHand", theme: "hot", title: "Hot Hand", label: "Streak Multiplier", locked: upgrades.hotHand === 0, current: upgrades.hotHand === 0 ? "Locked" : `Up to x${HOT_HAND_MULTS[upgrades.hotHand - 1]}`, add: upgrades.hotHand === 0 ? "Unlock x2" : upgrades.hotHand >= HOT_HAND_COSTS.length ? "Maxed" : `Unlock x${HOT_HAND_MULTS[upgrades.hotHand]}`, note: "Make 2 in a row to get hot. Starting on your 3rd straight make, your next shots get massive multipliers. Miss once and the streak resets.", cost: HOT_HAND_COSTS[upgrades.hotHand] || 0, level: upgrades.hotHand, max: HOT_HAND_COSTS.length, action: () => buyUpgrade("hotHand", HOT_HAND_COSTS[upgrades.hotHand], HOT_HAND_COSTS.length) },
-    { type: "singleTrack", key: "doubleRim", theme: "rim", title: "Rim Rescue", label: "Rim Rescue Chance", locked: upgrades.doubleRim === 0, current: upgrades.doubleRim === 0 ? "Locked" : `${doubleRimChance}%`, add: upgrades.doubleRim === 0 ? "Unlock 5%" : "+5%", note: "Rim Rescue gives some misses a chance to bounce in. Great for saving streaks when a shot barely misses.", cost: DOUBLE_RIM_COSTS[upgrades.doubleRim] || 0, level: upgrades.doubleRim, max: DOUBLE_RIM_COSTS.length, action: () => buyUpgrade("doubleRim", DOUBLE_RIM_COSTS[upgrades.doubleRim], DOUBLE_RIM_COSTS.length) },
-    { type: "singleTrack", key: "goldenBall", theme: "golden", title: "Golden Ball", label: "Golden Chance", locked: upgrades.goldenBall === 0, current: upgrades.goldenBall === 0 ? "Locked" : `${goldenChance}%`, add: upgrades.goldenBall === 0 ? "Unlock 3%" : "+3%", note: "Made shots can turn golden for x5 points. Max it out to unlock Super Golden.", cost: GOLDEN_BALL_COSTS[upgrades.goldenBall] || 0, level: upgrades.goldenBall, max: GOLDEN_BALL_COSTS.length, action: () => buyUpgrade("goldenBall", GOLDEN_BALL_COSTS[upgrades.goldenBall], GOLDEN_BALL_COSTS.length) },
-    ...(upgrades.goldenBall >= GOLDEN_BALL_COSTS.length ? [{ type: "singleTrack", key: "superGolden", theme: "golden", title: "Super Golden", label: "Golden Upgrade", locked: upgrades.superGolden === 0, current: upgrades.superGolden === 0 ? "Locked" : "Unlocked", add: upgrades.superGolden === 0 ? "Unlock x10" : "Maxed", note: "Turns some golden makes into Super Golden makes. Super Golden pays x10 instead of x5.", cost: upgrades.superGolden === 0 ? SUPER_GOLDEN_COST : 0, level: upgrades.superGolden, max: 1, action: () => buyUpgrade("superGolden", SUPER_GOLDEN_COST, 1) }] : []),
-    { type: "singleTrack", key: "coachChallenge", theme: "challenge", title: "Coach’s Challenge", label: "Redo Token", locked: upgrades.coachChallenge === 0, current: upgrades.coachChallenge > 0 ? "1 of 1 Ready" : "0 of 1 Held", add: upgrades.coachChallenge > 0 ? "Max 1 held" : "Purchase 1 of 1", note: "Purchase one redo token and keep it until you use it. After a miss, tap the clipboard icon to erase that miss and retake the shot without losing your streak.", cost: COACH_CHALLENGE_COST, level: upgrades.coachChallenge, max: 1, action: () => buyUpgrade("coachChallenge", COACH_CHALLENGE_COST, 1) },
+    { type: "singleTrack", key: "hotHand", theme: "hot", title: "Hot Hand", label: "Streak Multiplier", locked: upgrades.hotHand === 0, current: upgrades.hotHand === 0 ? "Locked" : `Up to x${HOT_HAND_MULTS[upgrades.hotHand - 1]}`, add: upgrades.hotHand === 0 ? "Unlock x2" : upgrades.hotHand >= HOT_HAND_COSTS.length ? "Maxed" : `Unlock x${HOT_HAND_MULTS[upgrades.hotHand]}`, note: "Hot Hand: Make 2 in a row to get hot. From the 3rd make on, streaks unlock big multipliers.\nThis is where the real points come from.", cost: HOT_HAND_COSTS[upgrades.hotHand] || 0, level: upgrades.hotHand, max: HOT_HAND_COSTS.length, action: () => buyUpgrade("hotHand", HOT_HAND_COSTS[upgrades.hotHand], HOT_HAND_COSTS.length) },
+    { type: "singleTrack", key: "doubleRim", theme: "rim", title: "Rim Rescue", label: "Rim Rescue Chance", locked: upgrades.doubleRim === 0, current: upgrades.doubleRim === 0 ? "Locked" : `${doubleRimChance}%`, add: upgrades.doubleRim === 0 ? "Unlock 5%" : "+5%", note: "Rim Rescue: Gives some misses a chance to bounce in.\nIt saves streaks, saves rounds, and turns ugly shots into lucky buckets.", cost: DOUBLE_RIM_COSTS[upgrades.doubleRim] || 0, level: upgrades.doubleRim, max: DOUBLE_RIM_COSTS.length, action: () => buyUpgrade("doubleRim", DOUBLE_RIM_COSTS[upgrades.doubleRim], DOUBLE_RIM_COSTS.length) },
+    { type: "singleTrack", key: "goldenBall", theme: "golden", title: "Golden Ball", label: "Golden Chance", locked: upgrades.goldenBall === 0, current: upgrades.goldenBall === 0 ? "Locked" : `${goldenChance}%`, add: upgrades.goldenBall === 0 ? "Unlock 3%" : "+3%", note: "Golden Ball: Gives made shots a chance to go gold for x5.\nEvery bucket gets jackpot potential.", cost: GOLDEN_BALL_COSTS[upgrades.goldenBall] || 0, level: upgrades.goldenBall, max: GOLDEN_BALL_COSTS.length, action: () => buyUpgrade("goldenBall", GOLDEN_BALL_COSTS[upgrades.goldenBall], GOLDEN_BALL_COSTS.length) },
+    ...(upgrades.goldenBall >= GOLDEN_BALL_COSTS.length ? [{ type: "singleTrack", key: "superGolden", theme: "golden", title: "Super Golden", label: "Golden Upgrade", locked: upgrades.superGolden === 0, current: upgrades.superGolden === 0 ? "Locked" : "Unlocked", add: upgrades.superGolden === 0 ? "Unlock x10" : "Maxed", note: "Super Golden: Gives golden makes a chance to become x10.\nRare, flashy, and built to break the bank.", cost: upgrades.superGolden === 0 ? SUPER_GOLDEN_COST : 0, level: upgrades.superGolden, max: 1, action: () => buyUpgrade("superGolden", SUPER_GOLDEN_COST, 1) }] : []),
+    { type: "singleTrack", key: "coachChallenge", theme: "challenge", title: "Coach’s Challenge", label: "Redo Token", locked: upgrades.coachChallenge === 0, current: upgrades.coachChallenge > 0 ? "1 of 1 Ready" : "0 of 1 Held", add: upgrades.coachChallenge > 0 ? "Max 1 held" : "Purchase 1 of 1", note: "Coach’s Challenge: Buy one redo and save it for a miss.\nErase the mistake, retake the shot, and keep the run alive.", cost: COACH_CHALLENGE_COST, level: upgrades.coachChallenge, max: 1, action: () => buyUpgrade("coachChallenge", COACH_CHALLENGE_COST, 1) },
     { type: "section", title: "Mystery / Trophy", theme: "mystery" }, { type: "playoff" }, { type: "trophy" },
   ];
 
@@ -1162,26 +1266,26 @@ export default function BasketballGame() {
           </div>
         </div>{!playoffShot && <div className="absolute left-1/2 bottom-[22%] z-10 -translate-x-1/2 pointer-events-none"><div className="relative h-14 w-14 rounded-full border-4 border-orange-900 bg-orange-500 shadow-2xl opacity-85 overflow-hidden"><div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 bg-orange-900/75" /><div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-orange-900/75" /><div className="absolute inset-2 rounded-full border border-orange-900/60" /></div></div>}{!playoffShot && <div className="absolute inset-x-0 bottom-5 z-10 flex justify-center"><button type="button" onClick={takePlayoffShot} className="rounded-3xl bg-purple-500 px-9 py-4 text-lg font-black text-white shadow-2xl border-2 border-purple-200 active:scale-[0.98]">Shoot</button></div>}<AnimatePresence>{playoffShot && <motion.div key={playoffShot.key} initial={{ left: "50%", top: "78%", rotate: 0 }} animate={playoffShot.made ? { left: ["50%", "50%", "50%", "50%", "50%", `${PLAYOFF_BACK_RIM_TARGET.x}%`, "50%"], top: ["78%", "38%", "-18%", "-18%", "9%", `${PLAYOFF_BACK_RIM_TARGET.y}%`, "32%"], rotate: [0, 120, 240, 240, 320, 420, 500] } : playoffShot.missSide === "left" ? { left: ["50%", "50%", "50%", "50%", "50%", "45%", "37%"], top: ["78%", "38%", "-18%", "-18%", "9%", "25%", "32%"], rotate: [0, 120, 240, 240, 320, 420, 520] } : { left: ["50%", "50%", "50%", "50%", "50%", "55%", "63%"], top: ["78%", "38%", "-18%", "-18%", "9%", "25%", "32%"], rotate: [0, 120, 240, 240, 320, 420, 520] }} transition={{ duration: 7.8, ease: "easeInOut", times: [0, 0.28, 0.46, 0.58, 0.68, 0.86, 1] }} className="absolute z-30 pointer-events-none h-12 w-12 -translate-x-1/2 -translate-y-1/2"><motion.div animate={playoffShot.made ? { scale: [1.35, 0.95, 0.7, 0.7, 0.34, 0.2, 0.06], opacity: [1, 1, 0, 0, 1, 1, 0] } : { scale: [1.35, 0.95, 0.7, 0.7, 0.34, 0.22, 0.16], opacity: [1, 1, 0, 0, 1, 1, 0] }} transition={{ duration: 7.8, ease: "easeInOut", times: [0, 0.28, 0.46, 0.58, 0.68, 0.86, 1] }} className="relative h-12 w-12 rounded-full border-4 border-orange-900 bg-orange-500 shadow-2xl overflow-hidden"><div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 bg-orange-900/75" /><div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-orange-900/75" /><div className="absolute inset-2 rounded-full border border-orange-900/60" /></motion.div></motion.div>}</AnimatePresence><AnimatePresence>{playoffResult && <motion.div initial={{ opacity: 0, scale: 0.55, y: 18 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 180, damping: 14 }} className={`absolute inset-0 z-40 flex flex-col items-center justify-center text-center pointer-events-none ${playoffResult === "made" ? "text-green-300" : "text-red-300"}`}>{playoffResult === "made" ? <><div className="mb-3 rounded-full border-2 border-green-200/60 bg-green-400/20 px-5 py-2 text-2xl font-black text-green-100 shadow-[0_0_28px_rgba(134,239,172,0.55)]">{playoffShot?.phrase || "CASHED IT!"}</div><div className="text-5xl font-black drop-shadow-[0_0_18px_rgba(134,239,172,0.8)]">BANK DOUBLED</div></> : <><div className="mb-3 rounded-full border-2 border-red-200/60 bg-red-400/20 px-5 py-2 text-2xl font-black text-red-100 shadow-[0_0_28px_rgba(248,113,113,0.45)]">{playoffShot?.phrase || "BUST"}</div><div className="text-6xl font-black">BUST</div></>}</motion.div>}</AnimatePresence></Card></div></Shell>;
 
-  if (screen === "lockerRoom") return <Shell>{transitionOverlay}<Card onClick={() => setConfirmDoubleOrNothingUpgrade(false)} className="h-[100dvh] p-2.5 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden touch-pan-y"><div className="shrink-0 rounded-3xl overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-950 p-3 shadow-xl"><div className="flex items-center justify-between gap-3"><div><p className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Locker Room</p><h1 className="text-3xl font-black leading-none mt-1">{formatNumber(currentPoints)} <span className="text-sm font-black text-slate-400 align-middle">pts</span></h1></div><div className="flex gap-2"><button type="button" onClick={startCourt} className="rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black px-4 py-3 shadow-xl active:scale-[0.98]">Hit the Court</button></div></div><div className="grid grid-cols-5 gap-1 mt-3"><StatBox label="Balls" value={shotsPerTrip} color="text-sky-300" maxed={upgrades.extraShots >= EXTRA_BALL_COSTS.length} maxTheme="sky" /><StatBox label="Max Hot" value={upgrades.hotHand > 0 ? `x${HOT_HAND_MULTS[upgrades.hotHand - 1]}` : "-"} color={upgrades.hotHand > 0 ? "text-red-300" : "text-slate-500"} maxed={upgrades.hotHand >= HOT_HAND_COSTS.length} maxTheme="red" /><StatBox label="Rescue" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "-"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-500"} maxed={upgrades.doubleRim >= DOUBLE_RIM_COSTS.length} maxTheme="emerald" /><StatBox label="Gold" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? <span className="flex flex-col items-center leading-none"><span>{goldenChance}%</span><span className="mt-1 text-[8px] uppercase tracking-wide text-white">+SG</span></span> : `${goldenChance}%`) : "-"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-500"} maxed={upgrades.goldenBall >= GOLDEN_BALL_COSTS.length} maxTheme={upgrades.superGolden > 0 ? "superGold" : "yellow"} /><div className={`h-[66px] rounded-xl px-2 py-2 text-center relative overflow-hidden flex flex-col items-center justify-center border ${upgrades.coachChallenge > 0 ? "bg-cyan-950/70 border-cyan-300/70 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.45)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">Challenge</p><p className="mt-1 text-sm font-black leading-tight">{upgrades.coachChallenge > 0 ? <span className="flex flex-col items-center leading-none"><span className="text-base drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]">📋</span><span className="mt-1 text-[8px] uppercase tracking-wide text-cyan-200">Ready</span></span> : "-"}</p></div></div><div className="mt-2 flex justify-center"><button type="button" onClick={() => setScreen("title")} className="rounded-lg border border-slate-700 bg-slate-950/70 px-4 py-1.5 text-[9px] font-black uppercase tracking-wide text-slate-400 shadow-sm active:scale-[0.98]">Main Menu</button></div></div><div className="mt-3 grid grid-cols-3 gap-2">
-            <button type="button" onClick={() => setLockerScreen("shots")} className={`rounded-2xl border px-2 py-3 text-[11px] font-black active:scale-[0.98] ${lockerScreen === "shots" ? "bg-orange-500 border-orange-300 text-white shadow-[0_0_14px_rgba(249,115,22,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
+  if (screen === "lockerRoom") return <Shell>{transitionOverlay}<Card onClick={() => setConfirmDoubleOrNothingUpgrade(false)} className="h-[100dvh] p-2.5 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden touch-pan-y"><div className="shrink-0 rounded-3xl overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-950 px-3 pt-1.5 pb-3 shadow-xl"><div className="flex items-start justify-between gap-3"><div><button type="button" onClick={() => setScreen("title")} className="mb-0.5 rounded-md border border-slate-700 bg-slate-950/70 px-2 py-0 text-[8px] font-black uppercase tracking-wide text-slate-400 shadow-sm active:scale-[0.98]">Main Menu</button><h1 className="text-3xl font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-sm font-black text-slate-400 align-middle">pts</span></h1></div><button type="button" onClick={startCourt} className="rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black px-4 py-3 shadow-xl active:scale-[0.98]">Hit the Court</button></div><div className="grid grid-cols-5 gap-1 mt-1"><StatBox label="Balls" value={shotsPerTrip} color="text-sky-300" maxed={upgrades.extraShots >= EXTRA_BALL_COSTS.length} maxTheme="sky" /><StatBox label="Max Hot" value={upgrades.hotHand > 0 ? `x${HOT_HAND_MULTS[upgrades.hotHand - 1]}` : "-"} color={upgrades.hotHand > 0 ? "text-red-300" : "text-slate-500"} maxed={upgrades.hotHand >= HOT_HAND_COSTS.length} maxTheme="red" /><StatBox label="Rescue" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "-"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-500"} maxed={upgrades.doubleRim >= DOUBLE_RIM_COSTS.length} maxTheme="emerald" /><StatBox label="Gold" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? <span className="flex flex-col items-center leading-none"><span>{goldenChance}%</span><span className="mt-1 text-[8px] uppercase tracking-wide text-white">+SG</span></span> : `${goldenChance}%`) : "-"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-500"} maxed={upgrades.goldenBall >= GOLDEN_BALL_COSTS.length} maxTheme={upgrades.superGolden > 0 ? "superGold" : "yellow"} /><div className={`h-[44px] rounded-lg px-1 py-0.5 text-center relative overflow-hidden flex flex-col items-center justify-center border ${upgrades.coachChallenge > 0 ? "bg-cyan-950/70 border-cyan-300/70 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.45)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}><p className="text-[7px] uppercase tracking-wide text-slate-500 font-black leading-none">Challenge</p><p className="mt-0.5 text-xs font-black leading-tight">{upgrades.coachChallenge > 0 ? <span className="flex flex-col items-center leading-none"><span className="text-xs drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]">📋</span><span className="mt-0 text-[6px] uppercase tracking-wide text-cyan-200">Ready</span></span> : "-"}</p></div></div></div><div className="mt-2 grid grid-cols-3 gap-1.5">
+            <button type="button" onClick={() => setLockerScreen("shots")} className={`rounded-xl border px-2 py-2 text-[10px] font-black active:scale-[0.98] ${lockerScreen === "shots" ? "bg-orange-500 border-orange-300 text-white shadow-[0_0_14px_rgba(249,115,22,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-base leading-none">🏀</span>
                 <span className="leading-none">Shot Lab</span>
               </div>
             </button>
-            <button type="button" onClick={() => setLockerScreen("bonus")} className={`rounded-2xl border px-2 py-3 text-[11px] font-black active:scale-[0.98] ${lockerScreen === "bonus" ? "bg-red-500 border-red-300 text-white shadow-[0_0_14px_rgba(239,68,68,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
+            <button type="button" onClick={() => setLockerScreen("bonus")} className={`rounded-xl border px-2 py-2 text-[10px] font-black active:scale-[0.98] ${lockerScreen === "bonus" ? "bg-red-500 border-red-300 text-white shadow-[0_0_14px_rgba(239,68,68,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-base leading-none">⚡</span>
                 <span className="leading-none">Power-Ups</span>
               </div>
             </button>
-            <button type="button" onClick={() => setLockerScreen("mystery")} className={`rounded-2xl border px-2 py-3 text-[11px] font-black active:scale-[0.98] ${lockerScreen === "mystery" ? "bg-violet-500 border-violet-300 text-white shadow-[0_0_14px_rgba(139,92,246,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
+            <button type="button" onClick={() => setLockerScreen("mystery")} className={`rounded-xl border px-2 py-2 text-[10px] font-black active:scale-[0.98] ${lockerScreen === "mystery" ? "bg-violet-500 border-violet-300 text-white shadow-[0_0_14px_rgba(139,92,246,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-base leading-none">🎲</span>
                 <span className="leading-none">High Stakes</span>
               </div>
             </button>
-          </div><div className="mt-3 flex-1 min-h-0 overflow-y-scroll overscroll-contain touch-pan-y pr-1 [-webkit-overflow-scrolling:touch]"><div className="grid grid-cols-2 gap-2 pb-0">{shopItems.filter(Boolean).filter((item) => {
+          </div><div className="mt-2 flex-1 min-h-0 overflow-y-scroll overscroll-contain touch-pan-y pr-1 [-webkit-overflow-scrolling:touch]"><div className="grid grid-cols-2 gap-2 pb-0">{shopItems.filter(Boolean).filter((item) => {
                 if (lockerScreen === "shots") return item.key === "extraShots" || item.type === "shotUpgrade";
                 if (lockerScreen === "bonus") return ["hotHand", "coachChallenge", "doubleRim", "goldenBall", "superGolden"].includes(item.key);
                 if (lockerScreen === "mystery") return item.type === "playoff" || item.type === "trophy";
