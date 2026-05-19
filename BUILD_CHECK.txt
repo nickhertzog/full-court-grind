@@ -1,1 +1,1 @@
-Clean source package. Includes x=48 target and visible real-size shot wrapper.
+Clean source package. No node_modules, no dist, no package-lock. Includes midpoint make target y=7.0.
