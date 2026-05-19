@@ -205,7 +205,7 @@ function shotBallSize(points) {
   if (points >= 250) return "h-10 w-10";
   return "h-9 w-9";
 }
-function Shell({ children }) { return <div className="min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-md min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
+function Shell({ children }) { return <div className="font-sans antialiased min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-md min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
 function Card({ children, className = "", ...props }) { return <div className={`rounded-3xl shadow-2xl ${className}`} {...props}>{children}</div>; }
 function UpgradeButton({ children, disabled, onClick, className = "" }) { return <button type="button" disabled={disabled} onClick={onClick} className={`${className} disabled:cursor-not-allowed transition active:scale-[0.98]`}>{children}</button>; }
 
@@ -221,7 +221,7 @@ function StatBox({ label, value, color = "text-white", maxed = false, valueSize 
       ? "bg-gradient-to-br from-yellow-200/25 via-white/14 to-yellow-950/70 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.58)]"
       : "bg-emerald-950/70 border-emerald-300/70 shadow-[0_0_16px_rgba(52,211,153,0.42)]"
     : "bg-slate-900/80 border-slate-700";
-  return <div onClick={onClick} className={`h-[66px] rounded-xl border px-2 py-2 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">{label}</p><p className={`mt-1 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
+  return <div onClick={onClick} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">{label}</p><p className={`mt-1 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
 }
 
 function SingleTrackUpgradeCard({ title, theme = "lab", label, current, add, cost, level, max, onBuy, currentPoints, note = null, locked = false }) {
@@ -305,13 +305,15 @@ function MenuBasketball() {
           className="absolute flex h-36 w-36 items-center justify-center"
         >
           {type.aura === "fire" && (
-            <motion.div
-              animate={{ scale: [1, 1.12, 1], opacity: [0.78, 1, 0.82], rotate: [-4, 4, -4] }}
-              transition={{ duration: 0.62, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-[56%] text-[136px] leading-none drop-shadow-[0_0_18px_rgba(249,115,22,0.92)]"
-            >
-              🔥
-            </motion.div>
+            <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+              <motion.div
+                animate={{ scale: [1, 1.12, 1], opacity: [0.78, 1, 0.82], rotate: [-4, 4, -4] }}
+                transition={{ duration: 0.62, repeat: Infinity, ease: "easeInOut" }}
+                className="text-[136px] leading-none drop-shadow-[0_0_18px_rgba(249,115,22,0.92)]"
+              >
+                <span className="block -translate-y-[18px]">🔥</span>
+              </motion.div>
+            </div>
           )}
           {type.aura === "spark" && <div className="absolute inset-2 rounded-full bg-yellow-300/18 blur-xl" />}
           {type.aura === "super" && <div className="absolute inset-0 rounded-full bg-white/28 blur-2xl" />}
@@ -761,7 +763,47 @@ export default function BasketballGame() {
     }, 2400);
   }
 
-  const transitionOverlay = transitionScreen ? <AnimatePresence><motion.div key="basketball-transition" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }} className="fixed inset-0 z-[999] overflow-hidden bg-slate-950/95 backdrop-blur-sm pointer-events-none"><div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950" /><div className="absolute left-0 right-0 top-[70vh] h-[3px] bg-orange-300/25 shadow-[0_0_14px_rgba(251,146,60,0.35)]" /><motion.div initial={{ x: transitionScreen === "toCourt" ? "-28vw" : "128vw", y: "58vh", rotate: transitionScreen === "toCourt" ? -160 : 160, scale: 1 }} animate={{ x: transitionScreen === "toCourt" ? ["-28vw", "50vw", "128vw"] : ["128vw", "50vw", "-28vw"], y: ["30vh", "58vh", "30vh"], rotate: transitionScreen === "toCourt" ? [-160, 220, 620] : [160, -220, -620], scale: [1, 1.06, 1] }} transition={{ duration: 1.5, ease: [0.2, 0.7, 0.2, 1], times: [0, 0.5, 1] }} className="absolute left-0 top-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border-[9px] border-orange-900 bg-gradient-to-br from-orange-300 via-orange-500 to-orange-700 shadow-[0_0_42px_rgba(249,115,22,0.6)] overflow-hidden"><div className="absolute inset-y-0 left-1/2 w-[8px] -translate-x-1/2 bg-orange-900/80" /><div className="absolute inset-x-0 top-1/2 h-[8px] -translate-y-1/2 bg-orange-900/80" /><div className="absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-[5px] border-orange-900/65" /></motion.div></motion.div></AnimatePresence> : null;
+  const transitionOverlay = transitionScreen ? (
+    <AnimatePresence>
+      <motion.div
+        key="basketball-transition"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.12 }}
+        className="fixed inset-0 z-[999] overflow-hidden bg-slate-950/95 backdrop-blur-sm pointer-events-none"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950" />
+        <div className="absolute left-0 right-0 top-[70vh] h-[3px] bg-orange-300/25 shadow-[0_0_14px_rgba(251,146,60,0.35)]" />
+        <motion.div
+          initial={{
+            left: transitionScreen === "toCourt" ? "-28vw" : "128vw",
+            top: "58vh",
+          }}
+          animate={{
+            left: transitionScreen === "toCourt" ? ["-28vw", "50vw", "128vw"] : ["128vw", "50vw", "-28vw"],
+            top: ["30vh", "58vh", "30vh"],
+          }}
+          transition={{ duration: 1.5, ease: [0.2, 0.7, 0.2, 1], times: [0, 0.5, 1] }}
+          className="absolute h-40 w-40 -translate-x-1/2 -translate-y-1/2"
+        >
+          <motion.div
+            initial={{ rotate: transitionScreen === "toCourt" ? -160 : 160, scale: 1 }}
+            animate={{
+              rotate: transitionScreen === "toCourt" ? [-160, 220, 620] : [160, -220, -620],
+              scale: [1, 1.06, 1],
+            }}
+            transition={{ duration: 1.5, ease: [0.2, 0.7, 0.2, 1], times: [0, 0.5, 1] }}
+            className="relative h-40 w-40 rounded-full border-[9px] border-orange-900 bg-gradient-to-br from-orange-300 via-orange-500 to-orange-700 shadow-[0_0_42px_rgba(249,115,22,0.6)] overflow-hidden"
+          >
+            <div className="absolute inset-y-0 left-1/2 w-[8px] -translate-x-1/2 bg-orange-900/80" />
+            <div className="absolute inset-x-0 top-1/2 h-[8px] -translate-y-1/2 bg-orange-900/80" />
+            <div className="absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-[5px] border-orange-900/65" />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  ) : null;
   function beginFreshGame() {
     try {
       window.localStorage.removeItem(SAVE_KEY);
@@ -1055,8 +1097,8 @@ export default function BasketballGame() {
             {saveStatus && <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300">{saveStatus}</p>}
           </div>
           {showNewGamePrompt && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/96 backdrop-blur-md px-4">
-              <div className="w-full max-w-[345px] rounded-[30px] border border-sky-300/40 bg-slate-950 p-5 text-center shadow-[0_0_28px_rgba(14,165,233,0.14)]">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/84 backdrop-blur-sm px-4">
+              <div className="w-full max-w-[345px] rounded-[30px] border border-sky-300/25 bg-slate-900/96 p-5 text-center shadow-[0_0_28px_rgba(14,165,233,0.14)]">
                 <SavedProgressIcon />
 
                 {!confirmFreshStart ? (
@@ -1105,7 +1147,7 @@ export default function BasketballGame() {
     </Shell>
   );
 
-  if (screen === "playoff") return <Shell><div className="min-h-[100dvh] bg-slate-950 p-3 flex flex-col gap-3"><Card className="border border-purple-400/50 bg-gradient-to-br from-slate-900 via-slate-950 to-purple-950/70 p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div className="min-w-0 flex-1"><p className="text-[9px] uppercase tracking-[0.22em] font-black text-purple-300 whitespace-nowrap">Double or Nothing</p><h1 className="mt-1 text-[27px] font-black leading-none text-white whitespace-nowrap">Full-Court Gamble</h1></div><button type="button" onClick={() => setScreen("lockerRoom")} className="shrink-0 rounded-xl border border-sky-300/50 bg-sky-500 px-3 py-2 text-[10px] font-black text-white shadow-lg active:scale-[0.98] hover:bg-sky-600">Locker Room</button></div><div className="mt-3 rounded-2xl border border-purple-300/25 bg-slate-950/65 p-3 text-center shadow-inner"><p className="text-[10px] uppercase tracking-[0.24em] font-black text-slate-500">Current Bank</p><p className="mt-1 text-4xl font-black leading-none text-white">{formatNumber(currentPoints)} <span className="text-base text-slate-400">pts</span></p></div><p className="mt-2 text-center text-[12px] font-black leading-tight text-slate-200">One shot. Double your bank or lose it all.</p><p className="text-center text-[10px] font-bold leading-tight text-slate-500">All bonuses are off.</p></Card><Card className="relative w-full aspect-[390/460] overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-950 via-slate-900 to-[#c98542]"><div className="absolute left-3 top-3 z-20 rounded-2xl border border-purple-200/40 bg-slate-950/72 px-4 py-3 shadow-lg backdrop-blur-sm"><p className="text-[10px] uppercase tracking-[0.18em] font-black text-purple-200 leading-none">Make Chance</p><p className="mt-1 text-3xl font-black leading-none text-white">{doubleOrNothingChance}%</p></div>
+  if (screen === "playoff") return <Shell><div className="min-h-[100dvh] bg-slate-950 p-3 flex flex-col gap-3"><Card className="border border-purple-400/50 bg-gradient-to-br from-slate-900 via-slate-950 to-purple-950/70 p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div className="min-w-0 flex-1"><p className="text-[9px] uppercase tracking-[0.22em] font-black text-purple-300 whitespace-nowrap">Double or Nothing</p><h1 className="mt-1 text-[27px] font-black leading-none text-white whitespace-nowrap">Full-Court Gamble</h1></div><button type="button" onClick={() => setScreen("lockerRoom")} className="shrink-0 rounded-xl border border-sky-300/50 bg-sky-500 px-3 py-2 text-[10px] font-black text-white shadow-lg active:scale-[0.98] hover:bg-sky-600">Locker Room</button></div><div className="mt-3 rounded-2xl border border-purple-300/25 bg-slate-950/65 p-3 text-center shadow-inner"><p className="text-[10px] uppercase tracking-[0.24em] font-black text-slate-500">Current Bank</p><p className="mt-1 text-4xl font-black leading-none text-white">{formatNumber(currentPoints)} <span className="text-base text-slate-400">pts</span></p></div><p className="mt-2 text-center text-[12px] font-black leading-tight text-slate-200">One shot. Double your bank or lose it all.</p><p className="text-center text-[10px] font-bold leading-tight text-slate-500">All bonuses are off.</p></Card><Card className="relative flex-1 min-h-[460px] overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-950 via-slate-900 to-[#c98542]"><div className="absolute left-3 top-3 z-20 rounded-2xl border border-purple-200/40 bg-slate-950/72 px-4 py-3 shadow-lg backdrop-blur-sm"><p className="text-[10px] uppercase tracking-[0.18em] font-black text-purple-200 leading-none">Make Chance</p><p className="mt-1 text-3xl font-black leading-none text-white">{doubleOrNothingChance}%</p></div>
         <div className="absolute left-1/2 top-[18%] z-10 -translate-x-1/2 pointer-events-none">
           <div className="relative h-[34px] w-[58px] rounded-[4px] border-[3px] border-white bg-slate-100 shadow-[0_4px_10px_rgba(0,0,0,0.35)]">
             <div className="absolute left-1/2 top-[8px] h-[12px] w-[18px] -translate-x-1/2 border-[2px] border-slate-500" />
@@ -1146,7 +1188,7 @@ export default function BasketballGame() {
                 return true;
               }).map((item, index) => { if (item.type === "section") { const t = THEME[item.theme] || THEME.lab; return <div key={`section-${index}`} className={`col-span-2 mt-2 first:mt-0 rounded-xl border px-3 py-2 ${t.header}`}><p className="text-[9px] uppercase tracking-[0.2em] font-black">{item.title}</p></div>; } if (item.type === "singleTrack") return <SingleTrackUpgradeCard key={item.key} {...item} onBuy={item.action} currentPoints={currentPoints} />; if (item.type === "shotUpgrade") return <ShotUpgradeCard key={item.key} title={item.title} theme="lab" accuracyCurrent={item.accuracyCurrent} accuracyAdd={item.accuracyAdd} accuracyCost={item.accuracyCost} accuracyLevel={item.accuracyLevel} accuracyMax={item.accuracyMax} onBuyAccuracy={item.accuracyAction} valueCurrent={item.valueCurrent} valueAdd={item.valueAdd} valueCost={item.valueCost} valueLevel={item.valueLevel} valueMax={item.valueMax} onBuyValue={item.valueAction} currentPoints={currentPoints} locked={!!item.locked} unlockCost={item.unlockCost ?? 0} onUnlock={item.unlockAction} />; if (item.type === "playoff") return <div key="playoff" onClick={(event) => event.stopPropagation()} className="col-span-2 rounded-xl border border-white/20 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(88,28,135,0.28),rgba(30,64,175,0.22),rgba(5,150,105,0.18),rgba(202,138,4,0.18),rgba(190,24,93,0.2))] p-3.5 shadow-[0_0_24px_rgba(255,255,255,0.06)]"><div className="flex items-start justify-between gap-3"><div><p className="text-base font-black text-white">Double or Nothing</p><p className="mt-1 text-[11px] leading-snug text-slate-300">One shot. Double your bank or lose it all.</p></div><div className="rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 text-center"><p className="text-lg font-black leading-none text-white">{currentPoints >= PLAYOFF_TICKET_COST ? `${doubleOrNothingChance}%` : "?"}</p><p className="text-[7px] uppercase tracking-wide font-black text-slate-300">Make</p></div></div><button type="button" disabled={currentPoints < PLAYOFF_TICKET_COST} onClick={openPlayoffDoor} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${currentPoints < PLAYOFF_TICKET_COST ? "bg-slate-800 text-slate-500" : "bg-white/12 hover:bg-white/18 text-white border border-white/20"}`}>{currentPoints >= PLAYOFF_TICKET_COST ? "Enter Challenge" : `Reach ${formatNumber(PLAYOFF_TICKET_COST)} pts`}</button>{currentPoints >= PLAYOFF_TICKET_COST && <><div className="my-3 flex items-center gap-2"><div className="h-px flex-1 bg-white/12" /><span className="text-[8px] uppercase tracking-[0.18em] font-black text-slate-400">Upgrade</span><div className="h-px flex-1 bg-white/12" /></div><button type="button" disabled={upgrades.doubleOrNothing > 0 || currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST} onClick={buyDoubleOrNothingUpgrade} className={`mt-2 w-full rounded-xl px-3 py-2 text-xs font-black ${upgrades.doubleOrNothing > 0 ? "bg-emerald-700/40 text-emerald-200" : currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST ? "bg-slate-800 text-slate-500" : confirmDoubleOrNothingUpgrade ? "bg-red-500 hover:bg-red-600 text-white" : "bg-violet-500 hover:bg-violet-600 text-white"}`}>{upgrades.doubleOrNothing > 0 ? "50% Unlocked" : confirmDoubleOrNothingUpgrade ? "Are you sure? Tap again" : `Upgrade to 50% • ${formatNumber(DOUBLE_OR_NOTHING_UPGRADE_COST)} pts`}</button></>}</div>; if (item.type === "trophy") return <TrophyCard key="trophy" title="The Crown" text="The finish line. Reach the mark, claim the crown, win the grind." buttonText={currentPoints >= TROPHY_COST ? "Claim the Crown" : `Reach ${formatNumber(TROPHY_COST)} pts`} disabled={currentPoints < TROPHY_COST} maxed={hasWon} onClick={buyTrophy} className="bg-gradient-to-br from-yellow-300/22 via-amber-400/22 to-orange-500/20 border-yellow-300/55 shadow-[0_0_28px_rgba(250,204,21,0.16)]" titleClassName="text-yellow-200" buttonClassName="bg-yellow-400 hover:bg-yellow-500 text-slate-950" />; return null; })}</div></div></Card></Shell>;
 
-  return <Shell>{transitionOverlay}<div className="p-3 space-y-2 bg-slate-950 min-h-screen"><Card className="border border-slate-700 bg-slate-900"><motion.div animate={missShakeKey > 0 ? { x: missShakeKey % 2 === 0 ? [0, -8, 8, -6, 6, -3, 3, 0] : [0, 8, -8, 6, -6, 3, -3, 0], y: [0, 2, -2, 1, -1, 0] } : { x: 0, y: 0 }} transition={{ duration: 0.42, ease: "easeOut" }} className="relative h-[485px] overflow-hidden rounded-3xl border border-amber-900/40 bg-[#c98542]"><div className={`absolute left-2 top-2 ${courtTripOver ? "z-[82] rounded-2xl bg-slate-950/42 p-1 backdrop-blur-[1px]" : "z-30"} flex flex-col items-center gap-1 pointer-events-none`}>
+  return <Shell>{transitionOverlay}<div className="p-3 space-y-1.5 bg-slate-950 min-h-[100dvh]" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}><Card className="border border-slate-700 bg-slate-900"><motion.div animate={missShakeKey > 0 ? { x: missShakeKey % 2 === 0 ? [0, -8, 8, -6, 6, -3, 3, 0] : [0, 8, -8, 6, -6, 3, -3, 0], y: [0, 2, -2, 1, -1, 0] } : { x: 0, y: 0 }} transition={{ duration: 0.42, ease: "easeOut" }} className="relative h-[472px] overflow-hidden rounded-3xl border border-amber-900/40 bg-[#c98542]"><div className={`absolute left-2 top-2 ${courtTripOver ? "z-[82] rounded-2xl bg-slate-950/42 p-1 backdrop-blur-[1px]" : "z-30"} flex flex-col items-center gap-1 pointer-events-none`}>
             {Array.from({ length: shotsPerTrip }).map((_, index) => {
               const item = tripShots[index];
               const isNext = index === tripShots.length && !courtTripOver;
@@ -1230,15 +1272,15 @@ export default function BasketballGame() {
                   <button type="button" onClick={goLockerRoom} className="pointer-events-auto rounded-2xl border-2 border-sky-200/80 bg-sky-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(14,165,233,0.55)] active:scale-[0.97]">Hit the Showers</button>
                 </div>
               </div>
-            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950/85 border border-slate-700 p-2 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-xl font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-xs font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black px-3 py-2 text-xs shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-1.5 mt-1.5">
+            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950/92 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-1 mt-1">
             
-            <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[66px] rounded-xl border px-2 py-2 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
+            <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
               <p className="text-[9px] uppercase tracking-wide font-black leading-none opacity-80">{upgrades.coachChallenge > 0 ? "📋 Challenge the Play" : "Challenge the Play"}</p>
               <p className={`mt-1 text-sm font-black leading-tight ${upgrades.coachChallenge > 0 || challengeOffer ? "" : "text-slate-400"}`}>
                 {challengeOffer ? "Use Challenge" : upgrades.coachChallenge > 0 ? "Ready" : "Ask Coach 🔒"}
               </p>
             </button>
-            <div onClick={upgrades.hotHand <= 0 ? () => showLockedPrompt("Hot Hand") : undefined} className={`h-[66px] rounded-xl border px-2 py-2 text-center relative overflow-hidden flex flex-col items-center justify-center ${(lastShotMultiplier > 1 || (upgrades.hotHand > 0 && streak >= 2)) ? "bg-gradient-to-br from-orange-950/85 via-red-950/60 to-slate-950 border-orange-300/80 shadow-[0_0_22px_rgba(251,146,60,0.62)]" : "bg-slate-900/80 border-slate-700"}`}>
+            <div onClick={upgrades.hotHand <= 0 ? () => showLockedPrompt("Hot Hand") : undefined} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center ${(lastShotMultiplier > 1 || (upgrades.hotHand > 0 && streak >= 2)) ? "bg-gradient-to-br from-orange-950/85 via-red-950/60 to-slate-950 border-orange-300/80 shadow-[0_0_22px_rgba(251,146,60,0.62)]" : "bg-slate-900/80 border-slate-700"}`}>
               <p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">Hot Hand</p>
               {upgrades.hotHand <= 0 ? <p className="mt-2 text-sm font-black leading-none text-slate-400">Ask Coach 🔒</p> : <div className="mt-1 grid grid-cols-2 gap-2">
                 <div>
