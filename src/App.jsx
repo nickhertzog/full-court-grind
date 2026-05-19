@@ -202,7 +202,7 @@ function shotBallSize(points) {
   if (points >= 250) return "h-10 w-10";
   return "h-9 w-9";
 }
-function Shell({ children }) { return <div className="font-sans antialiased min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-md min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
+function Shell({ children }) { return <div className="font-sans antialiased min-h-[100dvh] bg-slate-950 text-white flex justify-center overflow-hidden"><div className="w-full max-w-[448px] min-h-[100dvh] bg-slate-950 overflow-hidden">{children}</div></div>; }
 function Card({ children, className = "", ...props }) { return <div className={`rounded-3xl shadow-2xl ${className}`} {...props}>{children}</div>; }
 function UpgradeButton({ children, disabled, onClick, className = "" }) { return <button type="button" disabled={disabled} onClick={onClick} className={`${className} disabled:cursor-not-allowed transition active:scale-[0.98]`}>{children}</button>; }
 
@@ -1045,7 +1045,7 @@ export default function BasketballGame() {
             <h2 className="mt-2 text-2xl font-black leading-none text-sky-200 tracking-[0.18em]">GRIND</h2>
             <div className="mx-auto mt-5 h-1.5 w-40 rounded-full bg-gradient-to-r from-transparent via-sky-300 to-transparent" />
             <div className="mt-5 rounded-2xl border border-orange-300/35 bg-gradient-to-r from-orange-500/20 via-sky-500/12 to-yellow-400/20 px-5 py-4 text-center shadow-[0_0_22px_rgba(251,146,60,0.12)]">
-              <p className="text-[19px] font-black uppercase leading-[0.95] tracking-[-0.035em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.9)]">Build Your Shot. Stack Up Streaks. Stockpile Points.</p>
+              <p className="text-[18px] font-black uppercase leading-[0.95] tracking-[-0.04em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.9)]">Build Your Shot. Stack Up Streaks.</p><p className="mt-1 text-[18px] font-black uppercase leading-[0.95] tracking-[-0.04em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.9)]">Stockpile Points.</p>
               <p className="mt-2 text-[12px] font-black uppercase tracking-[0.16em] text-orange-200">Get buckets, buy upgrades, and chase the crown.</p>
             </div>
             <button type="button" onClick={startNewGame} className="mt-7 w-full rounded-2xl bg-gradient-to-r from-sky-400 via-orange-300 to-amber-300 px-5 py-4 text-xl font-black text-slate-950 shadow-xl border-2 border-white/55 active:scale-[0.98]">PLAY</button>

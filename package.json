@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -14,8 +14,11 @@
     "react": "latest",
     "react-dom": "latest",
     "framer-motion": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/vite": "latest"
+    "lucide-react": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "tailwindcss": "3.4.17",
+    "postcss": "8.4.49",
+    "autoprefixer": "10.4.20"
+  }
 }
