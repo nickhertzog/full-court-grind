@@ -588,6 +588,7 @@ export default function BasketballGame() {
   const [challengeOffer, setChallengeOffer] = useState(null);
   const [challengeFlashKey, setChallengeFlashKey] = useState(null);
   const [openLook, setOpenLook] = useState(null);
+  const [openLookCooldown, setOpenLookCooldown] = useState(false);
   const [lockedPrompt, setLockedPrompt] = useState(null);
   const [upgrades, setUpgrades] = useState({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0, courtVision: 0 });
 
@@ -653,7 +654,7 @@ export default function BasketballGame() {
       setMissShakeKey(0);
       setTripShots([]);
       setChallengeOffer(null);
-      setChallengeFlashKey(null); setOpenLook(null);
+      setChallengeFlashKey(null); setOpenLook(null); setOpenLookCooldown(false);
       setLockerScreen("shots");
       setAutoSaveReady(true);
       setScreen("lockerRoom");
@@ -725,12 +726,16 @@ export default function BasketballGame() {
   useEffect(() => {
     if (screen !== "court") return;
     if (isShooting || courtTripOver || shotsRemaining <= 0) return;
+    if (openLookCooldown) {
+      if (openLook) setOpenLook(null);
+      return;
+    }
     if (upgrades.courtVision <= 0) {
       if (openLook) setOpenLook(null);
       return;
     }
     if (!openLook) setOpenLook(rollOpenLook());
-  }, [screen, isShooting, courtTripOver, shotsRemaining, upgrades.courtVision, openLook, availableShots]);
+  }, [screen, isShooting, courtTripOver, shotsRemaining, upgrades.courtVision, openLook, openLookCooldown, availableShots]);
   const nextHotHandMult = shotsRemaining > 0 && upgrades.hotHand > 0 && streak >= 2 ? HOT_HAND_MULTS[Math.min(Math.max(streak - 2, 0), upgrades.hotHand - 1)] || HOT_HAND_MULTS[upgrades.hotHand - 1] : 1;
   function showLockedPrompt(label) {
     setLockedPrompt({ label, key: Date.now() });
@@ -738,16 +743,16 @@ export default function BasketballGame() {
   }
 
   function goLockerRoom() {
-    setTransitionScreen("toLocker"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null);
+    setTransitionScreen("toLocker"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null); setOpenLookCooldown(false);
     window.setTimeout(() => setScreen("lockerRoom"), 1050); window.setTimeout(() => setTransitionScreen(null), 1500);
   }
   function startCourt() {
-    setTransitionScreen("toCourt"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null);
+    setTransitionScreen("toCourt"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null); setOpenLookCooldown(false);
     window.setTimeout(() => { setCourtRound((current) => current + 1); setScreen("court"); }, 1050); window.setTimeout(() => setTransitionScreen(null), 1500);
   }
 
   function runItBack() {
-    setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null); setCourtRound((current) => current + 1);
+    setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null); setOpenLookCooldown(false); setCourtRound((current) => current + 1);
   }
   function buyUpgrade(key, cost, max) { if (currentPoints < cost || upgrades[key] >= max) return; setCurrentPoints((current) => current - cost); setUpgrades((current) => ({ ...current, [key]: current[key] + 1 })); }
   function unlockShot(shotId) { const shot = SHOT_CONFIG[shotId]; const unlockKey = `${shotId}Unlocked`; if (!shot?.unlockCost || upgrades[unlockKey] || currentPoints < shot.unlockCost) return; setCurrentPoints((current) => current - shot.unlockCost); setUpgrades((current) => ({ ...current, [unlockKey]: true })); }
@@ -786,13 +791,14 @@ export default function BasketballGame() {
     if (!challengeOffer || upgrades.coachChallenge <= 0) return;
     const savedChallenge = challengeOffer;
     setChallengeFlashKey(Date.now());
-    setUpgrades((current) => ({ ...current, coachChallenge: 0, courtVision: 0 }));
+    setUpgrades((current) => ({ ...current, coachChallenge: 0 }));
     setChallengeOffer(null);
     setIsShooting(true);
     setCourtTripOver(false);
 
     window.setTimeout(() => {
       setChallengeFlashKey(null); setOpenLook(savedChallenge.openLookBefore || null);
+      setOpenLookCooldown(!!savedChallenge.openLookCooldownBefore);
       setAttemptsUsed(savedChallenge.attemptsUsedBefore);
       setStreak(savedChallenge.streakBefore);
       setLastShotMultiplier(savedChallenge.lastShotMultiplierBefore || 1);
@@ -818,7 +824,9 @@ export default function BasketballGame() {
     if (challengeOffer) setChallengeOffer(null);
     const openLookShot = isOpenLookShot(shot.id);
     const activeOpenLook = openLook;
+    const openLookCooldownBefore = openLookCooldown;
     setOpenLook(null);
+    setOpenLookCooldown(openLookShot);
     const madeBase = Math.random() * 100 < getDisplayedShotOdds(shot);
     const bouncedIn = !madeBase && upgrades.doubleRim > 0 && Math.random() * 100 < doubleRimChance;
     const made = madeBase || bouncedIn;
@@ -842,6 +850,7 @@ export default function BasketballGame() {
       shotHistoryBefore: shotHistory,
       isFinalShot,
       openLookBefore: activeOpenLook,
+      openLookCooldownBefore,
     };
     const phraseSeed = Date.now() + Math.floor(Math.random() * 1000);
     const mainCallout = superGolden
@@ -1001,7 +1010,7 @@ export default function BasketballGame() {
     setMissShakeKey(0);
     setLastShotMultiplier(1);
     setChallengeOffer(null);
-    setChallengeFlashKey(null); setOpenLook(null);
+    setChallengeFlashKey(null); setOpenLook(null); setOpenLookCooldown(false);
     setLockerScreen("shots");
     startCourt();
   }
@@ -1247,7 +1256,11 @@ export default function BasketballGame() {
 
             <p className="text-[10px] font-black uppercase tracking-[0.35em] text-orange-300">Arcade Basketball</p>
 
-            <h1 className="mt-3 text-[48px] font-black leading-[0.9] tracking-[-0.055em] text-orange-300 drop-shadow-[0_4px_0_rgba(0,0,0,0.9)]">HEATERBALL</h1>
+            <h1 className="mt-3 text-[48px] font-black leading-[0.9] tracking-[-0.055em] drop-shadow-[0_4px_0_rgba(0,0,0,0.9)]">
+              <span className="inline-flex items-end justify-center">
+                <span className="text-orange-300 drop-shadow-[0_0_14px_rgba(249,115,22,0.58)]">HEATER</span><span className="text-slate-100 drop-shadow-[0_2px_0_rgba(0,0,0,0.85)]">BALL</span>
+              </span>
+            </h1>
 
             <div className="mx-auto mt-4 h-1.5 w-40 rounded-full bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
 
