@@ -1,1 +1,1 @@
-Newest clean source package. Includes 10 max balls, fully solid saved-progress prompt, solid locked Ask Coach popup, final info popup behavior, compact locker room, autosave title skip, and all previous animation/flame/Safari fixes.
+Heaterball export. Includes one-word HEATERBALL title, updated menu, blue floppy save icon, super golden fire menu ball, Open Look/Court Vision, 10 max balls, compact scoreboards, solid saved-progress prompt, and all prior fixes.
