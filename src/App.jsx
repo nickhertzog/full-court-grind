@@ -825,8 +825,8 @@ export default function BasketballGame() {
     const openLookShot = isOpenLookShot(shot.id);
     const activeOpenLook = openLook;
     const openLookCooldownBefore = openLookCooldown;
+    const openLookCooldownAfterShot = openLookShot;
     setOpenLook(null);
-    setOpenLookCooldown(openLookShot);
     const madeBase = Math.random() * 100 < getDisplayedShotOdds(shot);
     const bouncedIn = !madeBase && upgrades.doubleRim > 0 && Math.random() * 100 < doubleRimChance;
     const made = madeBase || bouncedIn;
@@ -875,6 +875,7 @@ export default function BasketballGame() {
         if (earned > 0) { setCurrentPoints((current) => current + earned); setTripPointsEarned((current) => current + earned); }
         setLastShotMultiplier(hotHandMult);
         setStreak(nextStreak);
+        setOpenLookCooldown(openLookCooldownAfterShot);
         setBestStreak((current) => Math.max(current, nextStreak));
         setCareerStats((current) => ({
             ...current,
@@ -1474,7 +1475,7 @@ export default function BasketballGame() {
               <div className="rounded-2xl border-2 border-slate-300 bg-slate-950 px-4 py-2 text-center text-sm font-black text-white shadow-[0_0_26px_rgba(0,0,0,1)]">
                 Purchase in Locker Room
               </div>
-            </motion.div>}</AnimatePresence>{courtTripOver && <motion.div initial={{ opacity: 0, y: 18, scale: 0.82 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 190, damping: 14 }} className="absolute inset-x-4 top-[260px] z-[70] flex justify-center pointer-events-none">
+            </motion.div>}</AnimatePresence>{courtTripOver && <motion.div initial={{ opacity: 0, y: 18, scale: 0.82 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 190, damping: 14 }} className="absolute inset-x-4 top-[220px] z-[70] flex justify-center pointer-events-none">
               <div className="w-full max-w-[340px] rounded-3xl border-2 border-white/25 bg-slate-950 px-5 py-4 text-center shadow-[0_0_34px_rgba(15,23,42,0.95)] backdrop-blur-sm">
                 <p className="text-[10px] uppercase tracking-[0.24em] font-black text-slate-400">Round Total</p>
                 <p className="mt-1 text-5xl font-black leading-none text-green-300 drop-shadow-[0_0_14px_rgba(134,239,172,0.65)]">+{formatNumber(tripPointsEarned)}</p>
