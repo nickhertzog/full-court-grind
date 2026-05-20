@@ -1,1 +1,1 @@
-Heaterball export. Includes one-word HEATERBALL title, updated menu, blue floppy save icon, super golden fire menu ball, Open Look/Court Vision, 10 max balls, compact scoreboards, solid saved-progress prompt, and all prior fixes.
+Current Heaterball canvas export. Clean HEATERBALL title with hot HEATER and silver/gray BALL. Includes Court Vision preserved after Coach's Challenge, silent one-shot Open Look cooldown, updated menu ball cycle, blue floppy save icon, scoreboard updates, and 10 max balls.
