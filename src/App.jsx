@@ -6,6 +6,10 @@ const PLAYOFF_TICKET_COST = 10000;
 const DOUBLE_OR_NOTHING_UPGRADE_COST = 20000;
 const SUPER_GOLDEN_COST = 5000;
 const COACH_CHALLENGE_COST = 500;
+const COURT_VISION_COSTS = [75, 200, 500, 1200, 3000];
+const COURT_VISION_CHANCES = [25, 35, 45, 55, 65];
+const OPEN_LOOK_ODDS_BONUS = { layup: 5, freeThrow: 10, three: 15, halfCourt: 20 };
+const OPEN_LOOK_POINTS_MULT = 1.25;
 const SAVE_KEY = "fullCourtGrindSaveV1";
 const RIM = { x: 50, y: 3.8 };
 const FRONT_RIM_LEFT = { x: 44.2, y: 7.0 };
@@ -163,6 +167,7 @@ const THEME = {
   rim: { header: "bg-emerald-950/60 border-emerald-400/60 text-emerald-300", card: "bg-gradient-to-br from-emerald-950/60 via-teal-950/30 to-slate-900 border-emerald-400/60", title: "text-emerald-200", add: "text-emerald-300", button: "bg-emerald-500 hover:bg-emerald-600 text-white", bar: "bg-emerald-400" },
   golden: { header: "bg-yellow-950/60 border-yellow-400/60 text-yellow-300", card: "bg-gradient-to-br from-yellow-900/50 via-amber-950/40 to-slate-900 border-yellow-400/70", title: "text-yellow-200", add: "text-yellow-300", button: "bg-yellow-400 hover:bg-yellow-500 text-slate-950", bar: "bg-yellow-300" },
   challenge: { header: "bg-cyan-950/60 border-cyan-400/60 text-cyan-300", card: "bg-gradient-to-br from-cyan-950/60 via-blue-950/30 to-slate-900 border-cyan-400/60", title: "text-cyan-200", add: "text-cyan-300", button: "bg-cyan-500 hover:bg-cyan-600 text-white", bar: "bg-cyan-400" },
+  vision: { header: "bg-lime-950/60 border-lime-400/60 text-lime-300", card: "bg-gradient-to-br from-lime-950/55 via-emerald-950/25 to-slate-900 border-lime-400/60", title: "text-lime-200", add: "text-lime-300", button: "bg-lime-500 hover:bg-lime-600 text-slate-950", bar: "bg-lime-400" },
   mystery: { header: "border-white/20 text-white bg-[linear-gradient(90deg,rgba(168,85,247,0.18),rgba(59,130,246,0.16),rgba(16,185,129,0.14),rgba(250,204,21,0.14),rgba(244,114,182,0.16))]", card: "border-white/20 text-white bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(88,28,135,0.28),rgba(30,64,175,0.22),rgba(5,150,105,0.18),rgba(202,138,4,0.18),rgba(190,24,93,0.2))] shadow-[0_0_26px_rgba(255,255,255,0.06)]", title: "text-white", add: "text-fuchsia-200", button: "bg-white/12 hover:bg-white/18 text-white border border-white/20", bar: "bg-gradient-to-r from-fuchsia-400 via-sky-400 via-emerald-300 to-amber-300" },
   trophy: { header: "bg-gradient-to-r from-yellow-300/22 via-amber-300/18 to-orange-300/16 border-yellow-300/40 text-yellow-100", card: "bg-gradient-to-br from-yellow-300/16 via-amber-400/14 to-slate-950 border-yellow-300/45", title: "text-yellow-200", add: "text-yellow-200", button: "bg-yellow-400 hover:bg-yellow-500 text-slate-950", bar: "bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400" },
   neutral: { header: "bg-slate-900/80 border-slate-600 text-slate-300", card: "bg-slate-900 border-slate-700", title: "text-slate-100", add: "text-slate-300", button: "bg-slate-700 hover:bg-slate-600 text-white", bar: "bg-slate-400" },
@@ -209,7 +214,7 @@ function Shell({ children }) { return <div className="font-sans antialiased min-
 function Card({ children, className = "", ...props }) { return <div className={`rounded-3xl shadow-2xl ${className}`} {...props}>{children}</div>; }
 function UpgradeButton({ children, disabled, onClick, className = "" }) { return <button type="button" disabled={disabled} onClick={onClick} className={`${className} disabled:cursor-not-allowed transition active:scale-[0.98]`}>{children}</button>; }
 
-function StatBox({ label, value, color = "text-white", maxed = false, valueSize = "text-sm", onClick = undefined, maxTheme = "emerald" }) {
+function StatBox({ label, value, color = "text-white", maxed = false, valueSize = "text-sm", onClick = undefined, maxTheme = "emerald", labelSize = "text-[7px]", heightClass = "h-[44px]" }) {
   const maxClass = maxed
     ? maxTheme === "sky"
       ? "bg-sky-950/70 border-sky-300/70 shadow-[0_0_16px_rgba(56,189,248,0.42)]"
@@ -221,7 +226,7 @@ function StatBox({ label, value, color = "text-white", maxed = false, valueSize 
       ? "bg-gradient-to-br from-yellow-200/25 via-white/14 to-yellow-950/70 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.58)]"
       : "bg-emerald-950/70 border-emerald-300/70 shadow-[0_0_16px_rgba(52,211,153,0.42)]"
     : "bg-slate-900/80 border-slate-700";
-  return <div onClick={onClick} className={`h-[44px] rounded-lg border px-1 py-0.5 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className="text-[7px] uppercase tracking-wide text-slate-500 font-black leading-none">{label}</p><p className={`mt-0.5 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
+  return <div onClick={onClick} className={`${heightClass} rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center active:scale-[0.98] ${maxClass}`}><p className={`${labelSize} uppercase tracking-wide text-slate-500 font-black leading-none`}>{label}</p><p className={`mt-1 ${valueSize} font-black leading-tight ${color}`}>{value}</p></div>;
 }
 
 function SingleTrackUpgradeCard({ title, theme = "lab", label, current, add, cost, level, max, onBuy, currentPoints, note = null, locked = false }) {
@@ -380,6 +385,7 @@ function MenuBasketball() {
     { key: "hot", ball: "from-orange-300 via-orange-500 to-red-600", border: "border-red-800", line: "bg-red-950/75", glow: "shadow-[0_0_34px_rgba(248,113,22,0.78)]", aura: "fire" },
     { key: "golden", ball: "from-yellow-100 via-yellow-300 to-amber-500", border: "border-yellow-700", line: "bg-yellow-800/70", glow: "shadow-[0_0_34px_rgba(250,204,21,0.78)]", aura: "spark" },
     { key: "super", ball: "from-white via-yellow-100 to-yellow-300", border: "border-white", line: "bg-yellow-600/70", glow: "shadow-[0_0_42px_rgba(255,255,255,0.95)]", aura: "super" },
+    { key: "superFire", ball: "from-white via-yellow-100 to-yellow-300", border: "border-white", line: "bg-yellow-600/75", glow: "shadow-[0_0_48px_rgba(255,255,255,0.98)]", aura: "superFire" },
   ];
   const [ballIndex, setBallIndex] = useState(0);
   const type = ballTypes[ballIndex];
@@ -407,24 +413,26 @@ function MenuBasketball() {
           transition={{ duration: 0.55, ease: "easeInOut" }}
           className="absolute flex h-36 w-36 items-center justify-center"
         >
-          {type.aura === "fire" && (
+          {(type.aura === "fire" || type.aura === "superFire") && (
             <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
               <motion.div
-                animate={{ scale: [1, 1.12, 1], opacity: [0.78, 1, 0.82], rotate: [-4, 4, -4] }}
+                animate={{ scale: [1, 1.12, 1], opacity: [0.8, 1, 0.84], rotate: [-4, 4, -4] }}
                 transition={{ duration: 0.62, repeat: Infinity, ease: "easeInOut" }}
-                className="text-[136px] leading-none drop-shadow-[0_0_18px_rgba(249,115,22,0.92)]"
+                className={`leading-none ${type.aura === "superFire" ? "text-[142px] drop-shadow-[0_0_20px_rgba(255,200,60,0.95)]" : "text-[136px] drop-shadow-[0_0_18px_rgba(249,115,22,0.92)]"}`}
               >
                 <span className="block -translate-y-[18px]">🔥</span>
               </motion.div>
             </div>
           )}
+
           {type.aura === "spark" && <div className="absolute inset-2 rounded-full bg-yellow-300/18 blur-xl" />}
           {type.aura === "super" && <div className="absolute inset-0 rounded-full bg-white/28 blur-2xl" />}
+          {type.aura === "superFire" && <div className="absolute inset-0 rounded-full bg-white/24 blur-2xl" />}
 
           <div className={`relative z-10 flex h-28 w-28 items-center justify-center rounded-full border-[7px] bg-gradient-to-br ${type.ball} ${type.border} ${type.glow} overflow-hidden`}>
             <div className={`absolute h-28 w-[5px] ${type.line}`} />
             <div className={`absolute h-[5px] w-28 ${type.line}`} />
-            <div className={`h-20 w-20 rounded-full border-4 ${type.key === "super" ? "border-yellow-500/60" : type.key === "golden" ? "border-yellow-800/55" : type.key === "hot" ? "border-red-950/55" : "border-orange-900/60"}`} />
+            <div className={`h-20 w-20 rounded-full border-4 ${type.key === "super" || type.key === "superFire" ? "border-yellow-500/60" : type.key === "golden" ? "border-yellow-800/55" : type.key === "hot" ? "border-red-950/55" : "border-orange-900/60"}`} />
           </div>
         </motion.div>
       </AnimatePresence>
@@ -434,18 +442,23 @@ function MenuBasketball() {
 
 function SavedProgressIcon() {
   return (
-    <div className="mx-auto flex items-center justify-center" style={{ perspective: 1000 }}>
+    <div className="mx-auto flex items-center justify-center">
       <motion.div
-        animate={{ rotateY: [0, -14, 0, 14, 0], rotateX: [0, 5, 0, -5, 0], y: [0, -2, 0] }}
-        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d" }}
-        className="relative h-[68px] w-[68px] rounded-[20px] border border-sky-300/30 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 shadow-[0_12px_28px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.08)]"
+        animate={{ y: [0, -2, 0], rotate: [0, -1.5, 0, 1.5, 0] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        className="relative h-[88px] w-[88px]"
       >
-        <div className="absolute inset-[3px] rounded-[17px] border border-white/5 bg-gradient-to-br from-slate-600/60 to-slate-900/85" />
-        <div className="absolute left-1/2 top-[8px] h-[14px] w-[30px] -translate-x-1/2 rounded-sm border border-slate-900/70 bg-slate-200/95" />
-        <div className="absolute left-[10px] top-[11px] h-[18px] w-[18px] rounded-[4px] bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.45)]" />
-        <div className="absolute right-[10px] top-[11px] h-[18px] w-[10px] rounded-sm bg-orange-300/70" />
-        <div className="absolute inset-x-[11px] bottom-[11px] h-[16px] rounded-[5px] bg-slate-950 border border-white/5" />
+        <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]" aria-hidden="true">
+          <path d="M18 12 H72 L88 28 V78 Q88 88 78 88 H22 Q12 88 12 78 V18 Q12 12 18 12 Z" fill="#2FAEE8" stroke="#000" strokeWidth="2.8" strokeLinejoin="round" />
+          <rect x="28" y="12" width="42" height="28" rx="3" fill="#B9B9BE" stroke="#000" strokeWidth="2.4" />
+          <rect x="58" y="18" width="10" height="16" rx="1" fill="#F2F2F2" stroke="#000" strokeWidth="2" />
+          <rect x="31" y="17" width="5" height="5" rx="0.6" fill="#F7F34A" stroke="#000" strokeWidth="1.6" />
+          <rect x="24" y="60" width="48" height="28" rx="3" fill="#B9B9BE" stroke="#000" strokeWidth="2.4" />
+          <rect x="32" y="66" width="32" height="12" rx="2" fill="#F2F2F2" stroke="#000" strokeWidth="2" />
+          <rect x="18" y="72" width="5" height="5" rx="0.6" fill="#F7F34A" stroke="#000" strokeWidth="1.6" />
+          <rect x="76" y="72" width="5" height="5" rx="0.6" fill="#F7F34A" stroke="#000" strokeWidth="1.6" />
+          <line x1="24" y1="60" x2="24" y2="88" stroke="#000" strokeWidth="2.2" />
+        </svg>
       </motion.div>
     </div>
   );
@@ -574,8 +587,9 @@ export default function BasketballGame() {
   const [lastShotMultiplier, setLastShotMultiplier] = useState(1);
   const [challengeOffer, setChallengeOffer] = useState(null);
   const [challengeFlashKey, setChallengeFlashKey] = useState(null);
+  const [openLook, setOpenLook] = useState(null);
   const [lockedPrompt, setLockedPrompt] = useState(null);
-  const [upgrades, setUpgrades] = useState({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0 });
+  const [upgrades, setUpgrades] = useState({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0, courtVision: 0 });
 
   function saveGame(silent = false) {
     try {
@@ -639,7 +653,7 @@ export default function BasketballGame() {
       setMissShakeKey(0);
       setTripShots([]);
       setChallengeOffer(null);
-      setChallengeFlashKey(null);
+      setChallengeFlashKey(null); setOpenLook(null);
       setLockerScreen("shots");
       setAutoSaveReady(true);
       setScreen("lockerRoom");
@@ -677,12 +691,46 @@ export default function BasketballGame() {
   const shotsRemaining = Math.max(0, shotsPerTrip - attemptsUsed);
   const doubleRimChance = upgrades.doubleRim * 5;
   const goldenChance = upgrades.goldenBall * 3;
+  const courtVisionChance = upgrades.courtVision > 0 ? COURT_VISION_CHANCES[upgrades.courtVision - 1] || 0 : 0;
   const doubleOrNothingChance = upgrades.doubleOrNothing > 0 ? 50 : 25;
   const endTripPhrasePool = tripPointsEarned >= BAD_TRIP_THRESHOLD ? NEUTRAL_LOCKER_PHRASES : INSULT_LOCKER_PHRASES;
   const endTripPhrase = endTripPhrasePool[courtRound % endTripPhrasePool.length];
   const getShotOdds = (shotId) => Math.min(SHOT_CONFIG[shotId].maxOdds, SHOT_CONFIG[shotId].baseOdds + upgrades[shotId] * SHOT_CONFIG[shotId].upgradeStep);
   const getShotValue = (shot) => shot.points * (1 + upgrades[`${shot.id}Specialist`]);
   const availableShots = useMemo(() => Object.values(SHOT_CONFIG).filter((shot) => shot.id === "layup" || upgrades[`${shot.id}Unlocked`]).map((shot) => ({ ...shot, odds: getShotOdds(shot.id) })), [upgrades]);
+
+  function isOpenLookShot(shotId) {
+    return upgrades.courtVision > 0 && openLook?.shotId === shotId;
+  }
+
+  function getDisplayedShotOdds(shot) {
+    const bonus = isOpenLookShot(shot.id) ? OPEN_LOOK_ODDS_BONUS[shot.id] || 0 : 0;
+    return Math.min(95, getShotOdds(shot.id) + bonus);
+  }
+
+  function getDisplayedShotValue(shot) {
+    const base = getShotValue(shot);
+    return isOpenLookShot(shot.id) ? Math.floor(base * OPEN_LOOK_POINTS_MULT) : base;
+  }
+
+  function rollOpenLook(nextAvailableShots = availableShots) {
+    if (upgrades.courtVision <= 0 || nextAvailableShots.length === 0) return null;
+    const chance = COURT_VISION_CHANCES[Math.min(upgrades.courtVision - 1, COURT_VISION_CHANCES.length - 1)] || 0;
+    if (Math.random() * 100 >= chance) return null;
+    const weights = { layup: 1, freeThrow: 3, three: 4, halfCourt: 3 };
+    const weightedShots = nextAvailableShots.flatMap((shot) => Array.from({ length: weights[shot.id] || 1 }, () => shot.id));
+    return { shotId: weightedShots[Math.floor(Math.random() * weightedShots.length)], key: Date.now() };
+  }
+
+  useEffect(() => {
+    if (screen !== "court") return;
+    if (isShooting || courtTripOver || shotsRemaining <= 0) return;
+    if (upgrades.courtVision <= 0) {
+      if (openLook) setOpenLook(null);
+      return;
+    }
+    if (!openLook) setOpenLook(rollOpenLook());
+  }, [screen, isShooting, courtTripOver, shotsRemaining, upgrades.courtVision, openLook, availableShots]);
   const nextHotHandMult = shotsRemaining > 0 && upgrades.hotHand > 0 && streak >= 2 ? HOT_HAND_MULTS[Math.min(Math.max(streak - 2, 0), upgrades.hotHand - 1)] || HOT_HAND_MULTS[upgrades.hotHand - 1] : 1;
   function showLockedPrompt(label) {
     setLockedPrompt({ label, key: Date.now() });
@@ -690,16 +738,16 @@ export default function BasketballGame() {
   }
 
   function goLockerRoom() {
-    setTransitionScreen("toLocker"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null);
+    setTransitionScreen("toLocker"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null);
     window.setTimeout(() => setScreen("lockerRoom"), 1050); window.setTimeout(() => setTransitionScreen(null), 1500);
   }
   function startCourt() {
-    setTransitionScreen("toCourt"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null);
+    setTransitionScreen("toCourt"); setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null);
     window.setTimeout(() => { setCourtRound((current) => current + 1); setScreen("court"); }, 1050); window.setTimeout(() => setTransitionScreen(null), 1500);
   }
 
   function runItBack() {
-    setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setCourtRound((current) => current + 1);
+    setLastResult(null); setPointsPop(null); setBigShotMessage(null); setShotCallouts(null); setLastMadeBreakdown(null); setActiveShot(null); setIsShooting(false); setAttemptsUsed(0); setStreak(0); setLastShotMultiplier(1); setCourtTripOver(false); setTripPointsEarned(0); setMissShakeKey(0); setTripShots([]); setChallengeOffer(null); setChallengeFlashKey(null); setOpenLook(null); setCourtRound((current) => current + 1);
   }
   function buyUpgrade(key, cost, max) { if (currentPoints < cost || upgrades[key] >= max) return; setCurrentPoints((current) => current - cost); setUpgrades((current) => ({ ...current, [key]: current[key] + 1 })); }
   function unlockShot(shotId) { const shot = SHOT_CONFIG[shotId]; const unlockKey = `${shotId}Unlocked`; if (!shot?.unlockCost || upgrades[unlockKey] || currentPoints < shot.unlockCost) return; setCurrentPoints((current) => current - shot.unlockCost); setUpgrades((current) => ({ ...current, [unlockKey]: true })); }
@@ -738,13 +786,13 @@ export default function BasketballGame() {
     if (!challengeOffer || upgrades.coachChallenge <= 0) return;
     const savedChallenge = challengeOffer;
     setChallengeFlashKey(Date.now());
-    setUpgrades((current) => ({ ...current, coachChallenge: 0 }));
+    setUpgrades((current) => ({ ...current, coachChallenge: 0, courtVision: 0 }));
     setChallengeOffer(null);
     setIsShooting(true);
     setCourtTripOver(false);
 
     window.setTimeout(() => {
-      setChallengeFlashKey(null);
+      setChallengeFlashKey(null); setOpenLook(savedChallenge.openLookBefore || null);
       setAttemptsUsed(savedChallenge.attemptsUsedBefore);
       setStreak(savedChallenge.streakBefore);
       setLastShotMultiplier(savedChallenge.lastShotMultiplierBefore || 1);
@@ -768,7 +816,10 @@ export default function BasketballGame() {
   function takeShot(shot) {
     if (isShooting || shotsRemaining <= 0) return;
     if (challengeOffer) setChallengeOffer(null);
-    const madeBase = Math.random() * 100 < getShotOdds(shot.id);
+    const openLookShot = isOpenLookShot(shot.id);
+    const activeOpenLook = openLook;
+    setOpenLook(null);
+    const madeBase = Math.random() * 100 < getDisplayedShotOdds(shot);
     const bouncedIn = !madeBase && upgrades.doubleRim > 0 && Math.random() * 100 < doubleRimChance;
     const made = madeBase || bouncedIn;
     const golden = upgrades.goldenBall > 0 && Math.random() * 100 < goldenChance;
@@ -778,8 +829,8 @@ export default function BasketballGame() {
     const hotHandStreakIndex = made ? Math.min(Math.max(nextStreak - 3, 0), Math.max(upgrades.hotHand - 1, 0)) : 0;
     const hotHandMult = made && nextStreak >= 3 && upgrades.hotHand > 0 ? HOT_HAND_MULTS[hotHandStreakIndex] || 1 : 1;
     const shotValue = getShotValue(shot);
-    const earned = made ? Math.floor(shotValue * hotHandMult * (superGolden ? 10 : golden ? 5 : 1)) : 0;
-    const madeBreakdown = made ? { base: shotValue, earned, golden, superGolden, hotHandMult, bouncedIn } : null;
+    const earned = made ? Math.floor(shotValue * hotHandMult * (superGolden ? 10 : golden ? 5 : 1) * (openLookShot ? OPEN_LOOK_POINTS_MULT : 1)) : 0;
+    const madeBreakdown = made ? { base: shotValue, earned, golden, superGolden, hotHandMult, bouncedIn, openLook: openLookShot } : null;
     const potentialMissValue = Math.floor(shotValue * hotHandMult * (golden ? 5 : 1));
     const wasOnHeater = upgrades.hotHand > 0 && streak >= 2;
     const isFinalShot = attemptsUsed + 1 >= shotsPerTrip;
@@ -790,6 +841,7 @@ export default function BasketballGame() {
       tripShotsBefore: tripShots,
       shotHistoryBefore: shotHistory,
       isFinalShot,
+      openLookBefore: activeOpenLook,
     };
     const phraseSeed = Date.now() + Math.floor(Math.random() * 1000);
     const mainCallout = superGolden
@@ -917,7 +969,7 @@ export default function BasketballGame() {
     setConfirmFreshStart(false);
     setAutoSaveReady(true);
     setCurrentPoints(startingPoints);
-    setUpgrades({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0 });
+    setUpgrades({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0, courtVision: 0 });
     setHasWon(false);
     setBestStreak(0);
     setShotHistory([]);
@@ -949,7 +1001,7 @@ export default function BasketballGame() {
     setMissShakeKey(0);
     setLastShotMultiplier(1);
     setChallengeOffer(null);
-    setChallengeFlashKey(null);
+    setChallengeFlashKey(null); setOpenLook(null);
     setLockerScreen("shots");
     startCourt();
   }
@@ -992,7 +1044,7 @@ export default function BasketballGame() {
         playoffTicket: 0,
         doubleOrNothing: 0,
         superGolden: 0,
-        coachChallenge: 0,
+        coachChallenge: 0, courtVision: 0,
       });
       setAttemptsUsed(0);
       setStreak(0);
@@ -1017,6 +1069,7 @@ export default function BasketballGame() {
     ...Object.values(SHOT_CONFIG).map((shot) => ({ type: "shotUpgrade", key: `${shot.id}Bundle`, title: shot.label, locked: shot.id !== "layup" && !upgrades[`${shot.id}Unlocked`], unlockCost: shot.unlockCost, unlockAction: () => unlockShot(shot.id), accuracyCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotOdds(shot.id)}%` : "Locked", accuracyAdd: "+5% make", accuracyCost: shot.costs[upgrades[shot.id]] || 0, accuracyLevel: upgrades[shot.id], accuracyMax: shot.costs.length, accuracyAction: () => buyUpgrade(shot.id, shot.costs[upgrades[shot.id]], shot.costs.length), valueCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotValue(shot)} pts` : "Locked", valueAdd: `+${shot.points} pts`, valueCost: SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]] || 0, valueLevel: upgrades[`${shot.id}Specialist`], valueMax: SPECIALIST_LEVEL_CAPS[shot.id], valueAction: () => buyUpgrade(`${shot.id}Specialist`, SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]], SPECIALIST_LEVEL_CAPS[shot.id]) })),
     { type: "section", title: "Bonus Stuff", theme: "neutral" },
     { type: "singleTrack", key: "hotHand", theme: "hot", title: "Hot Hand", label: "Streak Multiplier", locked: upgrades.hotHand === 0, current: upgrades.hotHand === 0 ? "Locked" : `Up to x${HOT_HAND_MULTS[upgrades.hotHand - 1]}`, add: upgrades.hotHand === 0 ? "Unlock x2" : upgrades.hotHand >= HOT_HAND_COSTS.length ? "Maxed" : `Unlock x${HOT_HAND_MULTS[upgrades.hotHand]}`, note: "Hot Hand: Make 2 in a row to get hot. From the 3rd make on, streaks unlock big multipliers.\nThis is where the real points come from.", cost: HOT_HAND_COSTS[upgrades.hotHand] || 0, level: upgrades.hotHand, max: HOT_HAND_COSTS.length, action: () => buyUpgrade("hotHand", HOT_HAND_COSTS[upgrades.hotHand], HOT_HAND_COSTS.length) },
+    { type: "singleTrack", key: "courtVision", theme: "vision", title: "Court Vision", label: "Open Look Chance", locked: upgrades.courtVision === 0, current: upgrades.courtVision === 0 ? "Locked" : `${COURT_VISION_CHANCES[upgrades.courtVision - 1]}%`, add: upgrades.courtVision === 0 ? "Unlock 25%" : upgrades.courtVision >= COURT_VISION_COSTS.length ? "Maxed" : `Next ${COURT_VISION_CHANCES[upgrades.courtVision]}%`, note: `Court Vision: Creates random Open Looks that boost one shot's odds.\nTake the glowing shot for +25% points and a better chance to hit.`, cost: COURT_VISION_COSTS[upgrades.courtVision] || 0, level: upgrades.courtVision, max: COURT_VISION_COSTS.length, action: () => buyUpgrade("courtVision", COURT_VISION_COSTS[upgrades.courtVision], COURT_VISION_COSTS.length) },
     { type: "singleTrack", key: "doubleRim", theme: "rim", title: "Rim Rescue", label: "Rim Rescue Chance", locked: upgrades.doubleRim === 0, current: upgrades.doubleRim === 0 ? "Locked" : `${doubleRimChance}%`, add: upgrades.doubleRim === 0 ? "Unlock 5%" : "+5%", note: "Rim Rescue: Gives some misses a chance to bounce in.\nIt saves streaks, saves rounds, and turns ugly shots into lucky buckets.", cost: DOUBLE_RIM_COSTS[upgrades.doubleRim] || 0, level: upgrades.doubleRim, max: DOUBLE_RIM_COSTS.length, action: () => buyUpgrade("doubleRim", DOUBLE_RIM_COSTS[upgrades.doubleRim], DOUBLE_RIM_COSTS.length) },
     { type: "singleTrack", key: "goldenBall", theme: "golden", title: "Golden Ball", label: "Golden Chance", locked: upgrades.goldenBall === 0, current: upgrades.goldenBall === 0 ? "Locked" : `${goldenChance}%`, add: upgrades.goldenBall === 0 ? "Unlock 3%" : "+3%", note: "Golden Ball: Gives made shots a chance to go gold for x5.\nEvery bucket gets jackpot potential.", cost: GOLDEN_BALL_COSTS[upgrades.goldenBall] || 0, level: upgrades.goldenBall, max: GOLDEN_BALL_COSTS.length, action: () => buyUpgrade("goldenBall", GOLDEN_BALL_COSTS[upgrades.goldenBall], GOLDEN_BALL_COSTS.length) },
     ...(upgrades.goldenBall >= GOLDEN_BALL_COSTS.length ? [{ type: "singleTrack", key: "superGolden", theme: "golden", title: "Super Golden", label: "Golden Upgrade", locked: upgrades.superGolden === 0, current: upgrades.superGolden === 0 ? "Locked" : "Unlocked", add: upgrades.superGolden === 0 ? "Unlock x10" : "Maxed", note: "Super Golden: Gives golden makes a chance to become x10.\nRare, flashy, and built to break the bank.", cost: upgrades.superGolden === 0 ? SUPER_GOLDEN_COST : 0, level: upgrades.superGolden, max: 1, action: () => buyUpgrade("superGolden", SUPER_GOLDEN_COST, 1) }] : []),
@@ -1178,38 +1231,48 @@ export default function BasketballGame() {
   if (screen === "title") return (
     <Shell>
       {transitionOverlay}
-      <div className="min-h-[100dvh] relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute left-1/2 top-[-8%] h-[520px] w-[520px] -translate-x-1/2 rounded-full border-[18px] border-orange-300/20" />
-          <div className="absolute left-[-25%] bottom-[-15%] h-72 w-72 rounded-full bg-orange-400/14 blur-3xl" />
-          <div className="absolute right-[-25%] top-[10%] h-72 w-72 rounded-full bg-sky-400/14 blur-3xl" />
+      <div className="min-h-[100dvh] relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black flex items-center justify-center p-4">
+        <div className="absolute inset-0 opacity-25 pointer-events-none">
+          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-orange-500/12 blur-3xl" />
+          <div className="absolute left-[-20%] bottom-[-10%] h-72 w-72 rounded-full bg-red-500/12 blur-3xl" />
+          <div className="absolute right-[-20%] top-[8%] h-72 w-72 rounded-full bg-yellow-400/10 blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.08),transparent_40%)]" />
         </div>
-        <Card className="relative w-full border border-slate-700 bg-slate-950 p-5 text-center shadow-2xl overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-sky-400 via-orange-300 to-amber-300" />
+
+        <Card className="relative w-full border border-orange-300/25 bg-slate-950 p-5 text-center shadow-2xl overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-red-500 via-orange-400 to-yellow-300" />
+
           <div className="relative z-10 pt-4">
             <MenuBasketball />
-            <h1 className="mt-2 text-[56px] font-black leading-[0.84] tracking-tight text-white drop-shadow-xl">FULL</h1>
-            <h1 className="text-[56px] font-black leading-[0.84] tracking-tight text-orange-300 drop-shadow-xl">COURT</h1>
-            <h2 className="mt-2 text-2xl font-black leading-none text-sky-200 tracking-[0.18em]">GRIND</h2>
-            <div className="mx-auto mt-5 h-1.5 w-40 rounded-full bg-gradient-to-r from-transparent via-sky-300 to-transparent" />
-            <div className="mt-5 rounded-2xl border border-orange-300/35 bg-gradient-to-r from-orange-500/20 via-sky-500/12 to-yellow-400/20 px-5 py-4 text-center shadow-[0_0_22px_rgba(251,146,60,0.12)]">
-              <p className="text-[19px] font-black uppercase leading-[0.95] tracking-[-0.035em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.9)]">Build Your Shot. Stack Up Streaks. Stockpile Points.</p>
-              <p className="mt-2 text-[12px] font-black uppercase tracking-[0.16em] text-orange-200">Get buckets, buy upgrades, and chase the crown.</p>
+
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-orange-300">Arcade Basketball</p>
+
+            <h1 className="mt-3 text-[48px] font-black leading-[0.9] tracking-[-0.055em] text-orange-300 drop-shadow-[0_4px_0_rgba(0,0,0,0.9)]">HEATERBALL</h1>
+
+            <div className="mx-auto mt-4 h-1.5 w-40 rounded-full bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
+
+            <div className="mt-5 rounded-2xl border border-orange-300/25 bg-gradient-to-r from-red-500/12 via-orange-500/14 to-yellow-400/12 px-5 py-4 text-center shadow-[0_0_22px_rgba(249,115,22,0.12)]">
+              <p className="text-[20px] font-black uppercase leading-[0.95] tracking-[-0.03em] text-white">Get Hot. Get Buckets.</p>
+              <p className="mt-2 text-[12px] font-black uppercase tracking-[0.16em] text-orange-200">Build heat, cash shots, and chase the crown.</p>
             </div>
-            <button type="button" onClick={startNewGame} className="mt-7 w-full rounded-2xl bg-gradient-to-r from-sky-400 via-orange-300 to-amber-300 px-5 py-4 text-xl font-black text-slate-950 shadow-xl border-2 border-white/55 active:scale-[0.98]">PLAY</button>
-            <button type="button" onClick={() => setScreen("howToPlay")} className="mt-3 w-full rounded-2xl bg-slate-900/90 px-5 py-3 text-sm font-black text-slate-200 shadow-lg border border-slate-700 active:scale-[0.98]">HOW TO PLAY</button>
+
+            <button type="button" onClick={startNewGame} className="mt-7 w-full rounded-2xl bg-gradient-to-r from-red-500 via-orange-400 to-yellow-300 px-5 py-4 text-xl font-black text-slate-950 shadow-xl border-2 border-white/40 active:scale-[0.98]">PLAY</button>
+
+            <button type="button" onClick={() => setScreen("howToPlay")} className="mt-3 w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-slate-200 shadow-lg border border-slate-700 active:scale-[0.98]">HOW TO PLAY</button>
+
             {saveStatus && <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300">{saveStatus}</p>}
           </div>
+
           {showNewGamePrompt && (
             <div className="absolute inset-0 z-[999] flex items-center justify-center bg-slate-950 px-4">
-              <div className="w-full max-w-[345px] rounded-[30px] border-2 border-sky-300 bg-slate-950 p-5 text-center shadow-[0_0_42px_rgba(0,0,0,1),0_0_30px_rgba(14,165,233,0.28)]">
+              <div className="w-full max-w-[345px] rounded-[30px] border-2 border-orange-300 bg-slate-950 p-5 text-center shadow-[0_0_42px_rgba(0,0,0,1),0_0_30px_rgba(249,115,22,0.24)]">
                 <SavedProgressIcon />
 
                 {!confirmFreshStart ? (
                   <>
-                    <p className="mt-4 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300">Saved Progress</p>
-                    <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Continue From Last Save?</h3>
-                    <p className="mt-3 text-[15px] font-bold leading-snug text-slate-200">We noticed saved progress on this device.</p>
+                    <p className="mt-4 text-[10px] font-black uppercase tracking-[0.28em] text-orange-300">Saved Progress</p>
+                    <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Continue Your Run?</h3>
+                    <p className="mt-3 text-[15px] font-bold leading-snug text-slate-200">We found saved Heaterball progress on this device.</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-3">
                       <button type="button" onClick={resumeGame} className="rounded-[24px] border-2 border-emerald-100 bg-emerald-500 px-3 py-4 text-center text-white shadow-[0_10px_20px_rgba(16,185,129,0.35)] transition hover:brightness-105 active:translate-y-[1px] active:scale-[0.985]">
@@ -1228,7 +1291,7 @@ export default function BasketballGame() {
                 ) : (
                   <>
                     <p className="mt-4 text-[10px] font-black uppercase tracking-[0.28em] text-red-300">Fresh Game</p>
-                    <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Are You Sure?</h3>
+                    <h3 className="mt-2 text-[30px] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_2px_0_rgba(15,23,42,0.95)]">Start a New Run?</h3>
                     <p className="mt-3 rounded-2xl border-2 border-red-400 bg-red-950 px-3 py-2 text-[13px] font-black leading-snug text-red-100">This will erase your saved progress on this device.</p>
                     <p className="mt-2 text-[14px] font-bold leading-snug text-slate-200">This will be a fresh game.</p>
 
@@ -1266,7 +1329,19 @@ export default function BasketballGame() {
           </div>
         </div>{!playoffShot && <div className="absolute left-1/2 bottom-[22%] z-10 -translate-x-1/2 pointer-events-none"><div className="relative h-14 w-14 rounded-full border-4 border-orange-900 bg-orange-500 shadow-2xl opacity-85 overflow-hidden"><div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 bg-orange-900/75" /><div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-orange-900/75" /><div className="absolute inset-2 rounded-full border border-orange-900/60" /></div></div>}{!playoffShot && <div className="absolute inset-x-0 bottom-5 z-10 flex justify-center"><button type="button" onClick={takePlayoffShot} className="rounded-3xl bg-purple-500 px-9 py-4 text-lg font-black text-white shadow-2xl border-2 border-purple-200 active:scale-[0.98]">Shoot</button></div>}<AnimatePresence>{playoffShot && <motion.div key={playoffShot.key} initial={{ left: "50%", top: "78%", rotate: 0 }} animate={playoffShot.made ? { left: ["50%", "50%", "50%", "50%", "50%", `${PLAYOFF_BACK_RIM_TARGET.x}%`, "50%"], top: ["78%", "38%", "-18%", "-18%", "9%", `${PLAYOFF_BACK_RIM_TARGET.y}%`, "32%"], rotate: [0, 120, 240, 240, 320, 420, 500] } : playoffShot.missSide === "left" ? { left: ["50%", "50%", "50%", "50%", "50%", "45%", "37%"], top: ["78%", "38%", "-18%", "-18%", "9%", "25%", "32%"], rotate: [0, 120, 240, 240, 320, 420, 520] } : { left: ["50%", "50%", "50%", "50%", "50%", "55%", "63%"], top: ["78%", "38%", "-18%", "-18%", "9%", "25%", "32%"], rotate: [0, 120, 240, 240, 320, 420, 520] }} transition={{ duration: 7.8, ease: "easeInOut", times: [0, 0.28, 0.46, 0.58, 0.68, 0.86, 1] }} className="absolute z-30 pointer-events-none h-12 w-12 -translate-x-1/2 -translate-y-1/2"><motion.div animate={playoffShot.made ? { scale: [1.35, 0.95, 0.7, 0.7, 0.34, 0.2, 0.06], opacity: [1, 1, 0, 0, 1, 1, 0] } : { scale: [1.35, 0.95, 0.7, 0.7, 0.34, 0.22, 0.16], opacity: [1, 1, 0, 0, 1, 1, 0] }} transition={{ duration: 7.8, ease: "easeInOut", times: [0, 0.28, 0.46, 0.58, 0.68, 0.86, 1] }} className="relative h-12 w-12 rounded-full border-4 border-orange-900 bg-orange-500 shadow-2xl overflow-hidden"><div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 bg-orange-900/75" /><div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-orange-900/75" /><div className="absolute inset-2 rounded-full border border-orange-900/60" /></motion.div></motion.div>}</AnimatePresence><AnimatePresence>{playoffResult && <motion.div initial={{ opacity: 0, scale: 0.55, y: 18 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 180, damping: 14 }} className={`absolute inset-0 z-40 flex flex-col items-center justify-center text-center pointer-events-none ${playoffResult === "made" ? "text-green-300" : "text-red-300"}`}>{playoffResult === "made" ? <><div className="mb-3 rounded-full border-2 border-green-200/60 bg-green-400/20 px-5 py-2 text-2xl font-black text-green-100 shadow-[0_0_28px_rgba(134,239,172,0.55)]">{playoffShot?.phrase || "CASHED IT!"}</div><div className="text-5xl font-black drop-shadow-[0_0_18px_rgba(134,239,172,0.8)]">BANK DOUBLED</div></> : <><div className="mb-3 rounded-full border-2 border-red-200/60 bg-red-400/20 px-5 py-2 text-2xl font-black text-red-100 shadow-[0_0_28px_rgba(248,113,113,0.45)]">{playoffShot?.phrase || "BUST"}</div><div className="text-6xl font-black">BUST</div></>}</motion.div>}</AnimatePresence></Card></div></Shell>;
 
-  if (screen === "lockerRoom") return <Shell>{transitionOverlay}<Card onClick={() => setConfirmDoubleOrNothingUpgrade(false)} className="h-[100dvh] p-2.5 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden touch-pan-y"><div className="shrink-0 rounded-3xl overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-950 px-3 pt-1.5 pb-3 shadow-xl"><div className="flex items-start justify-between gap-3"><div><button type="button" onClick={() => setScreen("title")} className="mb-0.5 rounded-md border border-slate-700 bg-slate-950/70 px-2 py-0 text-[8px] font-black uppercase tracking-wide text-slate-400 shadow-sm active:scale-[0.98]">Main Menu</button><h1 className="text-3xl font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-sm font-black text-slate-400 align-middle">pts</span></h1></div><button type="button" onClick={startCourt} className="rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black px-4 py-3 shadow-xl active:scale-[0.98]">Hit the Court</button></div><div className="grid grid-cols-5 gap-1 mt-1"><StatBox label="Balls" value={shotsPerTrip} color="text-sky-300" maxed={upgrades.extraShots >= EXTRA_BALL_COSTS.length} maxTheme="sky" /><StatBox label="Max Hot" value={upgrades.hotHand > 0 ? `x${HOT_HAND_MULTS[upgrades.hotHand - 1]}` : "-"} color={upgrades.hotHand > 0 ? "text-red-300" : "text-slate-500"} maxed={upgrades.hotHand >= HOT_HAND_COSTS.length} maxTheme="red" /><StatBox label="Rescue" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "-"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-500"} maxed={upgrades.doubleRim >= DOUBLE_RIM_COSTS.length} maxTheme="emerald" /><StatBox label="Gold" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? <span className="flex flex-col items-center leading-none"><span>{goldenChance}%</span><span className="mt-1 text-[8px] uppercase tracking-wide text-white">+SG</span></span> : `${goldenChance}%`) : "-"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-500"} maxed={upgrades.goldenBall >= GOLDEN_BALL_COSTS.length} maxTheme={upgrades.superGolden > 0 ? "superGold" : "yellow"} /><div className={`h-[44px] rounded-lg px-1 py-0.5 text-center relative overflow-hidden flex flex-col items-center justify-center border ${upgrades.coachChallenge > 0 ? "bg-cyan-950/70 border-cyan-300/70 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.45)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}><p className="text-[7px] uppercase tracking-wide text-slate-500 font-black leading-none">Challenge</p><p className="mt-0.5 text-xs font-black leading-tight">{upgrades.coachChallenge > 0 ? <span className="flex flex-col items-center leading-none"><span className="text-xs drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]">📋</span><span className="mt-0 text-[6px] uppercase tracking-wide text-cyan-200">Ready</span></span> : "-"}</p></div></div></div><div className="mt-2 grid grid-cols-3 gap-1.5">
+  if (screen === "lockerRoom") return <Shell>{transitionOverlay}<Card onClick={() => setConfirmDoubleOrNothingUpgrade(false)} className="h-[100dvh] p-2.5 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden touch-pan-y"><div className="shrink-0 rounded-3xl overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-800 to-slate-950 px-3 pt-1.5 pb-3 shadow-xl"><div className="flex items-start justify-between gap-3"><div><button type="button" onClick={() => setScreen("title")} className="mb-0.5 rounded-md border border-slate-700 bg-slate-950/70 px-2 py-0 text-[8px] font-black uppercase tracking-wide text-slate-400 shadow-sm active:scale-[0.98]">Main Menu</button><h1 className="text-3xl font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-sm font-black text-slate-400 align-middle">pts</span></h1></div><button type="button" onClick={startCourt} className="rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black px-4 py-3 shadow-xl active:scale-[0.98]">Hit the Court</button></div><div className="grid grid-cols-6 gap-1 mt-1">
+            <StatBox label="Balls" value={shotsPerTrip} color="text-sky-300" maxed={upgrades.extraShots >= EXTRA_BALL_COSTS.length} maxTheme="sky" labelSize="text-[7px]" valueSize="text-[13px]" heightClass="h-[52px]" />
+            <StatBox label="Hot Hand" value={upgrades.hotHand > 0 ? `x${HOT_HAND_MULTS[upgrades.hotHand - 1]}` : "-"} color={upgrades.hotHand > 0 ? "text-red-300" : "text-slate-500"} maxed={upgrades.hotHand >= HOT_HAND_COSTS.length} maxTheme="red" labelSize="text-[7px]" valueSize="text-[13px]" heightClass="h-[52px]" />
+            <StatBox label="Rim Rescue" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "-"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-500"} maxed={upgrades.doubleRim >= DOUBLE_RIM_COSTS.length} maxTheme="emerald" labelSize="text-[7px]" valueSize="text-[11px]" heightClass="h-[52px]" />
+            <StatBox label="Open Look" value={upgrades.courtVision > 0 ? `${courtVisionChance}%` : "-"} color={upgrades.courtVision > 0 ? "text-lime-300" : "text-slate-500"} maxed={upgrades.courtVision >= COURT_VISION_COSTS.length} maxTheme="emerald" labelSize="text-[7px]" valueSize="text-[11px]" heightClass="h-[52px]" />
+            <StatBox label="Golden" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? <span className="flex flex-col items-center leading-none"><span>{goldenChance}%</span><span className="mt-0.5 text-[7px] uppercase tracking-wide text-white">+SG</span></span> : `${goldenChance}%`) : "-"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-500"} maxed={upgrades.goldenBall >= GOLDEN_BALL_COSTS.length} maxTheme={upgrades.superGolden > 0 ? "superGold" : "yellow"} labelSize="text-[7px]" valueSize="text-[11px]" heightClass="h-[52px]" />
+            <div className={`h-[52px] rounded-xl px-1.5 py-1 text-center relative overflow-hidden flex flex-col items-center justify-center border ${upgrades.coachChallenge > 0 ? "bg-cyan-950/70 border-cyan-300/70 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.45)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
+              <p className="text-[7px] uppercase tracking-wide text-slate-500 font-black leading-none">Challenge</p>
+              <p className="mt-1 text-[12px] font-black leading-tight">{upgrades.coachChallenge > 0 ? <span className="flex flex-col items-center leading-none"><span className="text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]">📋</span><span className="mt-0.5 text-[7px] uppercase tracking-wide text-cyan-200">Ready</span></span> : "-"}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
             <button type="button" onClick={() => setLockerScreen("shots")} className={`rounded-xl border px-2 py-2 text-[10px] font-black active:scale-[0.98] ${lockerScreen === "shots" ? "bg-orange-500 border-orange-300 text-white shadow-[0_0_14px_rgba(249,115,22,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-base leading-none">🏀</span>
@@ -1287,7 +1362,7 @@ export default function BasketballGame() {
             </button>
           </div><div className="mt-2 flex-1 min-h-0 overflow-y-scroll overscroll-contain touch-pan-y pr-1 [-webkit-overflow-scrolling:touch]"><div className="grid grid-cols-2 gap-2 pb-0">{shopItems.filter(Boolean).filter((item) => {
                 if (lockerScreen === "shots") return item.key === "extraShots" || item.type === "shotUpgrade";
-                if (lockerScreen === "bonus") return ["hotHand", "coachChallenge", "doubleRim", "goldenBall", "superGolden"].includes(item.key);
+                if (lockerScreen === "bonus") return ["hotHand", "courtVision", "coachChallenge", "doubleRim", "goldenBall", "superGolden"].includes(item.key);
                 if (lockerScreen === "mystery") return item.type === "playoff" || item.type === "trophy";
                 return true;
               }).map((item, index) => { if (item.type === "section") { const t = THEME[item.theme] || THEME.lab; return <div key={`section-${index}`} className={`col-span-2 mt-2 first:mt-0 rounded-xl border px-3 py-2 ${t.header}`}><p className="text-[9px] uppercase tracking-[0.2em] font-black">{item.title}</p></div>; } if (item.type === "singleTrack") return <SingleTrackUpgradeCard key={item.key} {...item} onBuy={item.action} currentPoints={currentPoints} />; if (item.type === "shotUpgrade") return <ShotUpgradeCard key={item.key} title={item.title} theme="lab" accuracyCurrent={item.accuracyCurrent} accuracyAdd={item.accuracyAdd} accuracyCost={item.accuracyCost} accuracyLevel={item.accuracyLevel} accuracyMax={item.accuracyMax} onBuyAccuracy={item.accuracyAction} valueCurrent={item.valueCurrent} valueAdd={item.valueAdd} valueCost={item.valueCost} valueLevel={item.valueLevel} valueMax={item.valueMax} onBuyValue={item.valueAction} currentPoints={currentPoints} locked={!!item.locked} unlockCost={item.unlockCost ?? 0} onUnlock={item.unlockAction} />; if (item.type === "playoff") return <div key="playoff" onClick={(event) => event.stopPropagation()} className="col-span-2 rounded-xl border border-white/20 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(88,28,135,0.28),rgba(30,64,175,0.22),rgba(5,150,105,0.18),rgba(202,138,4,0.18),rgba(190,24,93,0.2))] p-3.5 shadow-[0_0_24px_rgba(255,255,255,0.06)]"><div className="flex items-start justify-between gap-3"><div><p className="text-base font-black text-white">Double or Nothing</p><p className="mt-1 text-[11px] leading-snug text-slate-300">One shot. Double your bank or lose it all.</p></div><div className="rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 text-center"><p className="text-lg font-black leading-none text-white">{currentPoints >= PLAYOFF_TICKET_COST ? `${doubleOrNothingChance}%` : "?"}</p><p className="text-[7px] uppercase tracking-wide font-black text-slate-300">Make</p></div></div><button type="button" disabled={currentPoints < PLAYOFF_TICKET_COST} onClick={openPlayoffDoor} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${currentPoints < PLAYOFF_TICKET_COST ? "bg-slate-800 text-slate-500" : "bg-white/12 hover:bg-white/18 text-white border border-white/20"}`}>{currentPoints >= PLAYOFF_TICKET_COST ? "Enter Challenge" : `Reach ${formatNumber(PLAYOFF_TICKET_COST)} pts`}</button>{currentPoints >= PLAYOFF_TICKET_COST && <><div className="my-3 flex items-center gap-2"><div className="h-px flex-1 bg-white/12" /><span className="text-[8px] uppercase tracking-[0.18em] font-black text-slate-400">Upgrade</span><div className="h-px flex-1 bg-white/12" /></div><button type="button" disabled={upgrades.doubleOrNothing > 0 || currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST} onClick={buyDoubleOrNothingUpgrade} className={`mt-2 w-full rounded-xl px-3 py-2 text-xs font-black ${upgrades.doubleOrNothing > 0 ? "bg-emerald-700/40 text-emerald-200" : currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST ? "bg-slate-800 text-slate-500" : confirmDoubleOrNothingUpgrade ? "bg-red-500 hover:bg-red-600 text-white" : "bg-violet-500 hover:bg-violet-600 text-white"}`}>{upgrades.doubleOrNothing > 0 ? "50% Unlocked" : confirmDoubleOrNothingUpgrade ? "Are you sure? Tap again" : `Upgrade to 50% • ${formatNumber(DOUBLE_OR_NOTHING_UPGRADE_COST)} pts`}</button></>}</div>; if (item.type === "trophy") return <TrophyCard key="trophy" title="The Crown" text="The finish line. Reach the mark, claim the crown, win the grind." buttonText={currentPoints >= TROPHY_COST ? "Claim the Crown" : `Reach ${formatNumber(TROPHY_COST)} pts`} disabled={currentPoints < TROPHY_COST} maxed={hasWon} onClick={buyTrophy} className="bg-gradient-to-br from-yellow-300/22 via-amber-400/22 to-orange-500/20 border-yellow-300/55 shadow-[0_0_28px_rgba(250,204,21,0.16)]" titleClassName="text-yellow-200" buttonClassName="bg-yellow-400 hover:bg-yellow-500 text-slate-950" />; return null; })}</div></div></Card></Shell>;
@@ -1330,7 +1405,27 @@ export default function BasketballGame() {
                     ))}
                   </div>
                 ))}
-              </div></div><AnimatePresence>{activeShot && <motion.div key={`${activeShot.id}-${shotAnimKey}`} initial={{ left: `${activeShot.x}%`, top: `${activeShot.y}%` }} animate={activeShot.bouncedIn ? { left: [`${activeShot.x}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.x : FRONT_RIM_RIGHT.x}%`, `${activeShot.missSide === "left" ? RIM_SAVE_DEFLECT_RIGHT.x : RIM_SAVE_DEFLECT_LEFT.x}%`, `${RIM_SAVE_CENTER.x}%`, `${BACK_RIM_TARGET.x}%`, `${MAKE_DROP_TARGET.x}%`], top: [`${activeShot.y}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.y : FRONT_RIM_RIGHT.y}%`, `${activeShot.missSide === "left" ? RIM_SAVE_DEFLECT_RIGHT.y : RIM_SAVE_DEFLECT_LEFT.y}%`, `${RIM_SAVE_CENTER.y}%`, `${BACK_RIM_TARGET.y}%`, `${MAKE_DROP_TARGET.y}%`] } : activeShot.made ? { left: [`${activeShot.x}%`, `${BACK_RIM_TARGET.x}%`, `${MAKE_DROP_TARGET.x}%`], top: [`${activeShot.y}%`, `${BACK_RIM_TARGET.y}%`, `${MAKE_DROP_TARGET.y}%`] } : { left: [`${activeShot.x}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.x : FRONT_RIM_RIGHT.x}%`, `${activeShot.missSide === "left" ? MISS_DEFLECT_LEFT.x : MISS_DEFLECT_RIGHT.x}%`], top: [`${activeShot.y}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.y : FRONT_RIM_RIGHT.y}%`, `${activeShot.missSide === "left" ? MISS_DEFLECT_LEFT.y : MISS_DEFLECT_RIGHT.y}%`] }} transition={{ duration: activeShot.bouncedIn ? 2.05 : activeShot.made ? 1.55 : 1.3, times: activeShot.bouncedIn ? [0, 0.52, 0.68, 0.82, 0.91, 1] : activeShot.made ? [0, 0.72, 1] : [0, 0.7, 1], ease: "easeInOut" }} className="absolute z-[60] pointer-events-none w-10 h-10 -translate-x-1/2 -translate-y-1/2"><motion.div animate={activeShot.bouncedIn ? { scale: [1, 0.96, 0.9, 0.62, 0.32, 0.08], opacity: [1, 1, 1, 1, 0.96, 0] } : activeShot.made ? { scale: [1, 0.52, 0.1], opacity: [1, 1, 0] } : { scale: [1, 0.96, 0.88], opacity: [1, 1, 0] }} transition={{ duration: activeShot.bouncedIn ? 2.05 : activeShot.made ? 1.55 : 1.3, times: activeShot.bouncedIn ? [0, 0.52, 0.68, 0.82, 0.91, 1] : activeShot.made ? [0, 0.72, 1] : [0, 0.7, 1], ease: "easeInOut" }} className={`relative h-10 w-10 rounded-full border-4 shadow-2xl ${activeShot.superGolden ? "overflow-visible bg-yellow-100 border-yellow-300 shadow-[0_0_30px_rgba(255,255,255,0.95)]" : activeShot.golden ? "overflow-visible bg-yellow-300 border-yellow-600" : "overflow-visible bg-orange-500 border-orange-800"}`}>{activeShot.superGolden && <div className="absolute inset-[-16px] rounded-full bg-white/40 blur-xl pointer-events-none" />}{activeShot.onFire && !activeShot.superGolden && <HotHandFire />}<div className={`absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 ${activeShot.superGolden ? "bg-yellow-500/70" : activeShot.golden ? "bg-yellow-700/70" : "bg-orange-800/70"}`} /><div className={`absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 ${activeShot.superGolden ? "bg-yellow-500/70" : activeShot.golden ? "bg-yellow-700/70" : "bg-orange-800/70"}`} /><div className={`absolute inset-1 rounded-full border ${activeShot.superGolden ? "border-yellow-500/60" : activeShot.golden ? "border-yellow-700/50" : "border-orange-800/50"}`} /></motion.div></motion.div>}</AnimatePresence>{!isShooting && !courtTripOver && shotsRemaining > 0 && availableShots.map((shot) => <button key={shot.id} type="button" onClick={() => takeShot(shot)} disabled={shotsRemaining <= 0} className="absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-black px-3.5 py-2 shadow-xl border border-orange-300 z-30 min-w-[76px]" style={{ left: `${shot.x}%`, top: `${shot.y}%` }}><span className="block text-2xl leading-none">+{getShotValue(shot)}</span><span className="mt-1 block text-[10px] leading-none opacity-90">{shot.label}</span><span className="mt-0.5 block text-[10px] leading-none opacity-80">{shot.odds}% make</span></button>)}{lastMadeBreakdown && <div className="absolute inset-x-8 bottom-4 z-20 flex items-center justify-center gap-1.5 text-center text-[11px] font-black leading-snug text-amber-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"><span className="text-white/75">Score Calc:</span><span className="text-white">{lastMadeBreakdown.base}</span>{lastMadeBreakdown.superGolden ? <span className="text-yellow-200 drop-shadow-[0_0_8px_rgba(250,204,21,0.85)]">×10</span> : lastMadeBreakdown.golden ? <span className="text-yellow-300">×5</span> : null}{lastMadeBreakdown.hotHandMult > 1 && <span className="text-red-300">×{lastMadeBreakdown.hotHandMult}</span>}{lastMadeBreakdown.bouncedIn && <span className="text-emerald-300">✓✓</span>}<span className="text-slate-400">=</span><span className="text-green-300">+{formatNumber(lastMadeBreakdown.earned)} pts</span></div>}<AnimatePresence>{lastResult && <motion.div key={`result-${shotAnimKey}`} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className={`absolute inset-0 flex items-center justify-center pointer-events-none z-50 ${lastResult.made ? "text-green-300 text-6xl font-black" : "text-red-400 text-7xl font-black italic tracking-tight [-webkit-text-stroke:2px_rgba(127,29,29,0.95)] drop-shadow-[0_0_18px_rgba(248,113,113,0.95)]"}`}>{lastResult.made ? "" : "CLANK!"}</motion.div>}</AnimatePresence><AnimatePresence>{pointsPop && <motion.div key={`points-${shotAnimKey}-${pointsPop}`} initial={{ opacity: 0, y: 18, scale: 0.85 }} animate={{ opacity: 1, y: 0, scale: 1.08 }} exit={{ opacity: 0, y: -18, scale: 0.95 }} transition={{ duration: 0.8 }} className="absolute inset-x-0 top-52 z-[65] flex justify-center pointer-events-none"><div className="rounded-xl border border-green-300/40 bg-slate-950/85 px-4 py-2 text-3xl font-black text-green-300 shadow-xl drop-shadow-[0_0_12px_rgba(134,239,172,0.9)]">+{formatNumber(pointsPop)}</div></motion.div>}</AnimatePresence><AnimatePresence>{shotCallouts && (shotCallouts.main || shotCallouts.bigScore || shotCallouts.rimSave) && <motion.div initial={{ opacity: 0, y: 24, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }} className="absolute inset-x-0 top-24 z-[66] flex flex-col items-center gap-1.5 pointer-events-none px-4">
+              </div></div><AnimatePresence>{activeShot && <motion.div key={`${activeShot.id}-${shotAnimKey}`} initial={{ left: `${activeShot.x}%`, top: `${activeShot.y}%` }} animate={activeShot.bouncedIn ? { left: [`${activeShot.x}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.x : FRONT_RIM_RIGHT.x}%`, `${activeShot.missSide === "left" ? RIM_SAVE_DEFLECT_RIGHT.x : RIM_SAVE_DEFLECT_LEFT.x}%`, `${RIM_SAVE_CENTER.x}%`, `${BACK_RIM_TARGET.x}%`, `${MAKE_DROP_TARGET.x}%`], top: [`${activeShot.y}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.y : FRONT_RIM_RIGHT.y}%`, `${activeShot.missSide === "left" ? RIM_SAVE_DEFLECT_RIGHT.y : RIM_SAVE_DEFLECT_LEFT.y}%`, `${RIM_SAVE_CENTER.y}%`, `${BACK_RIM_TARGET.y}%`, `${MAKE_DROP_TARGET.y}%`] } : activeShot.made ? { left: [`${activeShot.x}%`, `${BACK_RIM_TARGET.x}%`, `${MAKE_DROP_TARGET.x}%`], top: [`${activeShot.y}%`, `${BACK_RIM_TARGET.y}%`, `${MAKE_DROP_TARGET.y}%`] } : { left: [`${activeShot.x}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.x : FRONT_RIM_RIGHT.x}%`, `${activeShot.missSide === "left" ? MISS_DEFLECT_LEFT.x : MISS_DEFLECT_RIGHT.x}%`], top: [`${activeShot.y}%`, `${activeShot.missSide === "left" ? FRONT_RIM_LEFT.y : FRONT_RIM_RIGHT.y}%`, `${activeShot.missSide === "left" ? MISS_DEFLECT_LEFT.y : MISS_DEFLECT_RIGHT.y}%`] }} transition={{ duration: activeShot.bouncedIn ? 2.05 : activeShot.made ? 1.55 : 1.3, times: activeShot.bouncedIn ? [0, 0.52, 0.68, 0.82, 0.91, 1] : activeShot.made ? [0, 0.72, 1] : [0, 0.7, 1], ease: "easeInOut" }} className="absolute z-[60] pointer-events-none w-10 h-10 -translate-x-1/2 -translate-y-1/2"><motion.div animate={activeShot.bouncedIn ? { scale: [1, 0.96, 0.9, 0.62, 0.32, 0.08], opacity: [1, 1, 1, 1, 0.96, 0] } : activeShot.made ? { scale: [1, 0.52, 0.1], opacity: [1, 1, 0] } : { scale: [1, 0.96, 0.88], opacity: [1, 1, 0] }} transition={{ duration: activeShot.bouncedIn ? 2.05 : activeShot.made ? 1.55 : 1.3, times: activeShot.bouncedIn ? [0, 0.52, 0.68, 0.82, 0.91, 1] : activeShot.made ? [0, 0.72, 1] : [0, 0.7, 1], ease: "easeInOut" }} className={`relative h-10 w-10 rounded-full border-4 shadow-2xl ${activeShot.superGolden ? "overflow-visible bg-yellow-100 border-yellow-300 shadow-[0_0_30px_rgba(255,255,255,0.95)]" : activeShot.golden ? "overflow-visible bg-yellow-300 border-yellow-600" : "overflow-visible bg-orange-500 border-orange-800"}`}>{activeShot.superGolden && <div className="absolute inset-[-16px] rounded-full bg-white/40 blur-xl pointer-events-none" />}{activeShot.onFire && !activeShot.superGolden && <HotHandFire />}<div className={`absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 ${activeShot.superGolden ? "bg-yellow-500/70" : activeShot.golden ? "bg-yellow-700/70" : "bg-orange-800/70"}`} /><div className={`absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 ${activeShot.superGolden ? "bg-yellow-500/70" : activeShot.golden ? "bg-yellow-700/70" : "bg-orange-800/70"}`} /><div className={`absolute inset-1 rounded-full border ${activeShot.superGolden ? "border-yellow-500/60" : activeShot.golden ? "border-yellow-700/50" : "border-orange-800/50"}`} /></motion.div></motion.div>}</AnimatePresence>{!isShooting && !courtTripOver && shotsRemaining > 0 && availableShots.map((shot) => {
+              const open = isOpenLookShot(shot.id);
+              const buttonClass = open
+                ? "bg-lime-500 hover:bg-lime-600 border-lime-100 text-slate-950 shadow-[0_0_22px_rgba(132,204,22,0.85)] animate-pulse"
+                : "bg-orange-500 hover:bg-orange-600 border-orange-300 text-white";
+              return (
+                <button
+                  key={shot.id}
+                  type="button"
+                  onClick={() => takeShot(shot)}
+                  disabled={shotsRemaining <= 0}
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl active:scale-95 font-black px-3.5 py-2 shadow-xl border z-30 min-w-[76px] ${buttonClass}`}
+                  style={{ left: `${shot.x}%`, top: `${shot.y}%` }}
+                >
+                  {open ? <span className="mb-0.5 block text-[8px] leading-none tracking-[0.16em] font-black">OPEN LOOK</span> : null}
+                  <span className="block text-2xl leading-none">+{formatNumber(getDisplayedShotValue(shot))}</span>
+                  <span className="mt-1 block text-[10px] leading-none opacity-90">{shot.label}</span>
+                  <span className="mt-0.5 block text-[10px] leading-none opacity-80">{getDisplayedShotOdds(shot)}% make</span>
+                </button>
+              );
+            })}{lastMadeBreakdown && <div className="absolute inset-x-8 bottom-4 z-20 flex items-center justify-center gap-1.5 text-center text-[11px] font-black leading-snug text-amber-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"><span className="text-white/75">Score Calc:</span><span className="text-white">{lastMadeBreakdown.base}</span>{lastMadeBreakdown.superGolden ? <span className="text-yellow-200 drop-shadow-[0_0_8px_rgba(250,204,21,0.85)]">×10</span> : lastMadeBreakdown.golden ? <span className="text-yellow-300">×5</span> : null}{lastMadeBreakdown.hotHandMult > 1 && <span className="text-red-300">×{lastMadeBreakdown.hotHandMult}</span>}{lastMadeBreakdown.openLook && <span className="text-lime-300">×1.25</span>}{lastMadeBreakdown.bouncedIn && <span className="text-emerald-300">✓✓</span>}<span className="text-slate-400">=</span><span className="text-green-300">+{formatNumber(lastMadeBreakdown.earned)} pts</span></div>}<AnimatePresence>{lastResult && <motion.div key={`result-${shotAnimKey}`} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className={`absolute inset-0 flex items-center justify-center pointer-events-none z-50 ${lastResult.made ? "text-green-300 text-6xl font-black" : "text-red-400 text-7xl font-black italic tracking-tight [-webkit-text-stroke:2px_rgba(127,29,29,0.95)] drop-shadow-[0_0_18px_rgba(248,113,113,0.95)]"}`}>{lastResult.made ? "" : "CLANK!"}</motion.div>}</AnimatePresence><AnimatePresence>{pointsPop && <motion.div key={`points-${shotAnimKey}-${pointsPop}`} initial={{ opacity: 0, y: 18, scale: 0.85 }} animate={{ opacity: 1, y: 0, scale: 1.08 }} exit={{ opacity: 0, y: -18, scale: 0.95 }} transition={{ duration: 0.8 }} className="absolute inset-x-0 top-52 z-[65] flex justify-center pointer-events-none"><div className="rounded-xl border border-green-300/40 bg-slate-950/85 px-4 py-2 text-3xl font-black text-green-300 shadow-xl drop-shadow-[0_0_12px_rgba(134,239,172,0.9)]">+{formatNumber(pointsPop)}</div></motion.div>}</AnimatePresence><AnimatePresence>{shotCallouts && (shotCallouts.main || shotCallouts.bigScore || shotCallouts.rimSave) && <motion.div initial={{ opacity: 0, y: 24, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }} className="absolute inset-x-0 top-24 z-[66] flex flex-col items-center gap-1.5 pointer-events-none px-4">
               {shotCallouts.main && <div className={`rounded-2xl border-2 px-5 py-2 text-2xl font-black text-center ${CALLOUT_STYLES[shotCallouts.main.style]}`}>{shotCallouts.main.text}</div>}
               {shotCallouts.bigScore && <div className={`rounded-xl border-2 px-4 py-1.5 text-base font-black text-center ${CALLOUT_STYLES.bigScore}`}>{shotCallouts.bigScore.text}</div>}
               {shotCallouts.rimSave && <div className={`rounded-full border px-3 py-1 text-xs font-black text-center ${CALLOUT_STYLES.rimSave}`}>{shotCallouts.rimSave.text}</div>}
@@ -1376,28 +1471,27 @@ export default function BasketballGame() {
                   <button type="button" onClick={goLockerRoom} className="pointer-events-auto rounded-2xl border-2 border-sky-200/80 bg-sky-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(14,165,233,0.55)] active:scale-[0.97]">Hit the Showers</button>
                 </div>
               </div>
-            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-1 mt-1">
-            
-            <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
-              <p className="text-[9px] uppercase tracking-wide font-black leading-none opacity-80">{upgrades.coachChallenge > 0 ? "📋 Challenge the Play" : "Challenge the Play"}</p>
-              <p className={`mt-1 text-sm font-black leading-tight ${upgrades.coachChallenge > 0 || challengeOffer ? "" : "text-slate-400"}`}>
-                {challengeOffer ? "Use Challenge" : upgrades.coachChallenge > 0 ? "Ready" : "Ask Coach 🔒"}
-              </p>
+            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-3 gap-1.5 mt-1">
+
+            <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[60px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
+              <p className="text-[10px] uppercase tracking-wide font-black leading-none opacity-80">{upgrades.coachChallenge > 0 ? "📋 Challenge" : "Challenge"}</p>
+              <p className={`mt-1 text-[13px] font-black leading-tight ${upgrades.coachChallenge > 0 || challengeOffer ? "" : "text-slate-400"}`}>{challengeOffer ? "Use Challenge" : upgrades.coachChallenge > 0 ? "Ready" : "Ask Coach 🔒"}</p>
             </button>
-            <div onClick={upgrades.hotHand <= 0 ? () => showLockedPrompt("Hot Hand") : undefined} className={`h-[58px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center ${(lastShotMultiplier > 1 || (upgrades.hotHand > 0 && streak >= 2)) ? "bg-gradient-to-br from-orange-950/85 via-red-950/60 to-slate-950 border-orange-300/80 shadow-[0_0_22px_rgba(251,146,60,0.62)]" : "bg-slate-900/80 border-slate-700"}`}>
-              <p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">Hot Hand</p>
-              {upgrades.hotHand <= 0 ? <p className="mt-2 text-sm font-black leading-none text-slate-400">Ask Coach 🔒</p> : <div className="mt-1 grid grid-cols-2 gap-2">
+            <div onClick={upgrades.hotHand <= 0 ? () => showLockedPrompt("Hot Hand") : undefined} className={`col-span-2 h-[60px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden flex flex-col items-center justify-center ${(lastShotMultiplier > 1 || (upgrades.hotHand > 0 && streak >= 2)) ? "bg-gradient-to-br from-orange-950/85 via-red-950/60 to-slate-950 border-orange-300/80 shadow-[0_0_22px_rgba(251,146,60,0.62)]" : "bg-slate-900/80 border-slate-700"}`}>
+              <p className="text-[10px] uppercase tracking-wide text-slate-500 font-black leading-none">Hot Hand</p>
+              {upgrades.hotHand <= 0 ? <p className="mt-2 text-[13px] font-black leading-none text-slate-400">Ask Coach 🔒</p> : <div className="mt-1 grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[8px] uppercase tracking-wide text-slate-500 font-black leading-none">Last</p>
+                  <p className="text-[9px] uppercase tracking-wide text-slate-500 font-black leading-none">Last</p>
                   <p className={`${lastShotMultiplier > 1 ? "text-orange-100" : "text-slate-400"} mt-1 font-black leading-none transition-transform duration-200 ${hypeTextSize(lastShotMultiplier)} ${hypePulse(lastShotMultiplier)}`}>x{lastShotMultiplier}</p>
                 </div>
                 <div>
-                  <p className={`${nextHotHandMult >= 12 ? "text-orange-200" : "text-slate-500"} text-[8px] uppercase tracking-wide font-black leading-none`}>Next</p>
+                  <p className={`${nextHotHandMult >= 12 ? "text-orange-200" : "text-slate-500"} text-[9px] uppercase tracking-wide font-black leading-none`}>Next</p>
                   <p className={`${nextHotHandMult > 1 ? "text-red-100" : "text-slate-400"} mt-1 font-black leading-none transition-transform duration-200 ${hypeTextSize(nextHotHandMult)} ${hypePulse(nextHotHandMult)}`}>{nextHotHandMult > 1 ? `x${nextHotHandMult}` : "-"}</p>
                 </div>
               </div>}
             </div>
-            <StatBox label="Rim Rescue Chance" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "Ask Coach 🔒"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-400"} valueSize={upgrades.doubleRim > 0 ? "text-lg" : "text-sm"} onClick={upgrades.doubleRim <= 0 ? () => showLockedPrompt("Rim Rescue") : undefined} />
-            <StatBox label="Golden Ball Chance" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? `${goldenChance}% +SG` : `${goldenChance}%`) : "Ask Coach 🔒"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-400"} valueSize={upgrades.goldenBall > 0 ? "text-lg" : "text-sm"} onClick={upgrades.goldenBall <= 0 ? () => showLockedPrompt("Golden Ball") : undefined} />
+            <StatBox label="Rim Rescue" value={upgrades.doubleRim > 0 ? `${doubleRimChance}%` : "Ask Coach 🔒"} color={upgrades.doubleRim > 0 ? "text-emerald-300" : "text-slate-400"} valueSize={upgrades.doubleRim > 0 ? "text-base" : "text-[13px]"} labelSize="text-[10px]" heightClass="h-[54px]" onClick={upgrades.doubleRim <= 0 ? () => showLockedPrompt("Rim Rescue") : undefined} />
+            <StatBox label="Open Look" value={upgrades.courtVision > 0 ? `${courtVisionChance}%` : "Ask Coach 🔒"} color={upgrades.courtVision > 0 ? "text-lime-300" : "text-slate-400"} valueSize={upgrades.courtVision > 0 ? "text-base" : "text-[13px]"} labelSize="text-[10px]" heightClass="h-[54px]" onClick={upgrades.courtVision <= 0 ? () => showLockedPrompt("Open Look") : undefined} />
+            <StatBox label="Golden" value={upgrades.goldenBall > 0 ? (upgrades.superGolden > 0 ? `${goldenChance}% +SG` : `${goldenChance}%`) : "Ask Coach 🔒"} color={upgrades.goldenBall > 0 ? "text-yellow-300" : "text-slate-400"} valueSize={upgrades.goldenBall > 0 ? "text-base" : "text-[13px]"} labelSize="text-[10px]" heightClass="h-[54px]" onClick={upgrades.goldenBall <= 0 ? () => showLockedPrompt("Golden Ball") : undefined} />
           </div></div></div></Shell>;
 }
