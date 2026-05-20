@@ -22,7 +22,7 @@ const BACK_RIM_TARGET = { x: 50, y: 7.0 };
 const MAKE_DROP_TARGET = { x: 50, y: 11.5 };
 const PLAYOFF_BACK_RIM_TARGET = { x: 50, y: 24.2 };
 
-const EXTRA_BALL_COSTS = [2, 8, 25, 70, 180, 400, 900];
+const EXTRA_BALL_COSTS = [2, 8, 25, 70, 180, 400, 900, 2000];
 const SPECIALIST_COSTS = [15, 45, 120, 300, 700, 1400, 2600, 4500, 7500, 11500, 17000, 24000];
 const SPECIALIST_LEVEL_CAPS = {
   layup: 2,
