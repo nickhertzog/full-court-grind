@@ -513,17 +513,17 @@ function CrownRevealTile({ name, value, detail, tone = "violet" }) {
   const toneClass = toneMap[tone] || toneMap.violet;
 
   return (
-    <button type="button" onClick={() => setFlipped((current) => !current)} className="h-[88px] rounded-2xl text-left active:scale-[0.98]" style={{ perspective: 900 }}>
+    <button type="button" onClick={() => setFlipped((current) => !current)} className="h-[126px] rounded-2xl text-left active:scale-[0.98]" style={{ perspective: 900 }}>
       <motion.div animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.42, ease: "easeInOut" }} className="relative h-full w-full" style={{ transformStyle: "preserve-3d" }}>
-        <div className={`absolute inset-0 rounded-2xl border ${toneClass} bg-gradient-to-br from-slate-100/10 via-slate-900/95 to-slate-950 px-2.5 py-2 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]`} style={{ backfaceVisibility: "hidden" }}>
+        <div className={`absolute inset-0 rounded-2xl border ${toneClass} bg-slate-950 px-2.5 py-2 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]`} style={{ backfaceVisibility: "hidden" }}>
           <div className="absolute -right-5 -top-6 h-16 w-16 rounded-full bg-white/5 blur-xl" />
           <p className="relative z-10 text-[7px] uppercase tracking-[0.18em] font-black text-slate-500">Bonus Credit</p>
           <p className="relative z-10 mt-1 text-[10px] font-black uppercase leading-tight tracking-[-0.02em] text-white">{name}</p>
           <p className="relative z-10 mt-2 text-lg font-black leading-none">{value}</p>
           <p className="absolute bottom-1.5 right-2 text-[7px] font-black uppercase tracking-widest text-slate-600">Tap</p>
         </div>
-        <div className={`absolute inset-0 rounded-2xl border ${toneClass} bg-gradient-to-br from-slate-100/10 via-slate-900/95 to-slate-950 px-2.5 py-2 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-          <p className="relative z-10 text-[7px] uppercase tracking-[0.18em] font-black text-slate-500">Director’s Note</p>
+        <div className={`absolute inset-0 rounded-2xl border ${toneClass} bg-slate-950 px-2.5 py-2 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]`} style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+          <p className="relative z-10 text-[7px] uppercase tracking-[0.18em] font-black text-slate-500"></p>
           <p className="relative z-10 mt-1 text-[10px] font-black leading-tight text-white">{name}</p>
           <p className="relative z-10 mt-1.5 text-[9px] font-bold leading-tight text-slate-300">{detail}</p>
         </div>
@@ -560,11 +560,14 @@ export default function BasketballGame() {
   const [lastMadeBreakdown, setLastMadeBreakdown] = useState(null);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
+  const [careerMakeStreak, setCareerMakeStreak] = useState(0);
   const [shotHistory, setShotHistory] = useState([]);
   const [tripShots, setTripShots] = useState([]);
   const [courtRound, setCourtRound] = useState(1);
   const [hasWon, setHasWon] = useState(false);
   const [crownStats, setCrownStats] = useState(null);
+  const [justClaimedCrown, setJustClaimedCrown] = useState(false);
+  const [lockerCheatProgress, setLockerCheatProgress] = useState([]);
   const [careerStats, setCareerStats] = useState({
     largestSingleBall: 0,
     totalGoldenBalls: 0,
@@ -573,6 +576,8 @@ export default function BasketballGame() {
     heaterShots: 0,
     biggestRound: 0,
     mostExpensiveMiss: 0,
+    biggestGambitWin: 0,
+    biggestGambitLoss: 0,
     brickTax: 0,
     makesByShot: { layup: 0, freeThrow: 0, three: 0, halfCourt: 0 },
     moneyByShot: { layup: 0, freeThrow: 0, three: 0, halfCourt: 0 },
@@ -603,6 +608,7 @@ export default function BasketballGame() {
         upgrades,
         hasWon,
         bestStreak,
+        careerMakeStreak,
         courtRound,
         shotHistory,
         careerStats,
@@ -632,6 +638,7 @@ export default function BasketballGame() {
       setUpgrades((current) => ({ ...current, ...(saveData.upgrades || {}) }));
       setHasWon(!!saveData.hasWon);
       setBestStreak(Math.max(0, Math.floor(Number(saveData.bestStreak) || 0)));
+      setCareerMakeStreak(Math.max(0, Math.floor(Number(saveData.careerMakeStreak) || 0)));
       setCourtRound(Math.max(1, Math.floor(Number(saveData.courtRound) || 1)));
       setShotHistory(Array.isArray(saveData.shotHistory) ? saveData.shotHistory.slice(0, 15) : []);
       setCareerStats((current) => ({
@@ -687,7 +694,7 @@ export default function BasketballGame() {
     if (screen === "title") return;
     const timeout = window.setTimeout(() => saveGame(true), 250);
     return () => window.clearTimeout(timeout);
-  }, [autoSaveReady, screen, currentPoints, startingPoints, upgrades, hasWon, bestStreak, courtRound, shotHistory, careerStats]);
+  }, [autoSaveReady, screen, currentPoints, startingPoints, upgrades, hasWon, bestStreak, careerMakeStreak, courtRound, shotHistory, careerStats]);
 
   const shotsPerTrip = 2 + upgrades.extraShots;
   const shotsRemaining = Math.max(0, shotsPerTrip - attemptsUsed);
@@ -758,17 +765,29 @@ export default function BasketballGame() {
   function buyUpgrade(key, cost, max) { if (currentPoints < cost || upgrades[key] >= max) return; setCurrentPoints((current) => current - cost); setUpgrades((current) => ({ ...current, [key]: current[key] + 1 })); }
   function unlockShot(shotId) { const shot = SHOT_CONFIG[shotId]; const unlockKey = `${shotId}Unlocked`; if (!shot?.unlockCost || upgrades[unlockKey] || currentPoints < shot.unlockCost) return; setCurrentPoints((current) => current - shot.unlockCost); setUpgrades((current) => ({ ...current, [unlockKey]: true })); }
   function buyDoubleOrNothingUpgrade() { if (upgrades.doubleOrNothing > 0 || currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST) return; if (!confirmDoubleOrNothingUpgrade) { setConfirmDoubleOrNothingUpgrade(true); return; } setCurrentPoints((current) => current - DOUBLE_OR_NOTHING_UPGRADE_COST); setUpgrades((current) => ({ ...current, doubleOrNothing: 1 })); setConfirmDoubleOrNothingUpgrade(false); }
-  function buyTrophy() {
-    if (currentPoints < TROPHY_COST || hasWon) return;
+  function handleLockerCheatTap(tile) {
+    const code = ["look", "look", "golden", "look", "look", "golden", "look", "look", "golden", "hot"];
+    setLockerCheatProgress((current) => {
+      const attempt = [...current, tile];
+      const matches = attempt.every((value, index) => value === code[index]);
+      const next = matches ? attempt : tile === code[0] ? [tile] : [];
+      if (next.length === code.length) {
+        setCurrentPoints((points) => points + 100000);
+        return [];
+      }
+      return next;
+    });
+  }
+
+  function buildCrownStatsSnapshot() {
     const shotEntries = Object.values(SHOT_CONFIG).map((shot) => ({
       id: shot.id,
       label: shot.label,
       makes: careerStats.makesByShot?.[shot.id] || 0,
       money: careerStats.moneyByShot?.[shot.id] || 0,
     }));
-    const bestLocationByMakes = shotEntries.reduce((best, item) => (item.makes > best.makes ? item : best), { label: "None Yet", makes: 0 });
     const bestLocationByMoney = shotEntries.reduce((best, item) => (item.money > best.money ? item : best), { label: "None Yet", money: 0 });
-    setCrownStats({
+    return {
       finalBank: currentPoints,
       largestSingleBall: careerStats.largestSingleBall || 0,
       bestStreak,
@@ -778,16 +797,36 @@ export default function BasketballGame() {
       totalSuperGoldenBalls: careerStats.totalSuperGoldenBalls || 0,
       rimSaves: careerStats.rimSaves || 0,
       mostExpensiveMiss: careerStats.mostExpensiveMiss || 0,
+      biggestGambitWin: careerStats.biggestGambitWin || 0,
+      biggestGambitLoss: careerStats.biggestGambitLoss || 0,
       brickTax: careerStats.brickTax || 0,
       bestLocationByMoney,
       courtRound,
-    });
-    setHasWon(true);
+    };
+  }
+
+  function openCrownStats() {
+    if (!hasWon) return;
+    setCrownStats((current) => current || buildCrownStatsSnapshot());
+    setJustClaimedCrown(false);
     setScreen("crownCelebration");
+  }
+
+  function buyTrophy() {
+    if (hasWon) {
+      openCrownStats();
+      return;
+    }
+    if (currentPoints < TROPHY_COST) return;
+    setCrownStats(buildCrownStatsSnapshot());
+    setHasWon(true);
+    setJustClaimedCrown(true);
+    setScreen("crownCelebration");
+    window.setTimeout(() => setJustClaimedCrown(false), 5000);
   }
   function openPlayoffDoor() { setConfirmDoubleOrNothingUpgrade(false); if (currentPoints < PLAYOFF_TICKET_COST) return; setPlayoffShot(null); setPlayoffResult(null); setWagerInput(String(Math.min(PLAYOFF_TICKET_COST, currentPoints))); setScreen("playoff"); }
   function getWagerAmount() { return Math.max(0, Math.min(currentPoints, Math.floor(Number(wagerInput) || 0))); }
-  function takePlayoffShot() { if (playoffShot) return; const wagerAmount = getWagerAmount(); if (wagerAmount <= 0 || wagerAmount > currentPoints) return; const made = Math.random() * 100 < doubleOrNothingChance; setPlayoffShot({ made, wagerAmount, key: Date.now(), missSide: Math.random() < 0.5 ? "left" : "right", phrase: pickPhrase(made ? DOUBLE_OR_NOTHING_MADE_PHRASES : DOUBLE_OR_NOTHING_MISS_PHRASES, Date.now()) }); setPlayoffResult(null); window.setTimeout(() => { setCurrentPoints((current) => made ? current + wagerAmount : Math.max(0, current - wagerAmount)); setPlayoffResult(made ? "made" : "missed"); }, 7700); }
+  function takePlayoffShot() { if (playoffShot) return; const wagerAmount = getWagerAmount(); if (wagerAmount <= 0 || wagerAmount > currentPoints) return; const made = Math.random() * 100 < doubleOrNothingChance; setPlayoffShot({ made, wagerAmount, key: Date.now(), missSide: Math.random() < 0.5 ? "left" : "right", phrase: pickPhrase(made ? DOUBLE_OR_NOTHING_MADE_PHRASES : DOUBLE_OR_NOTHING_MISS_PHRASES, Date.now()) }); setPlayoffResult(null); window.setTimeout(() => { setCurrentPoints((current) => made ? current + wagerAmount : Math.max(0, current - wagerAmount)); setCareerStats((current) => ({ ...current, biggestGambitWin: made ? Math.max(current.biggestGambitWin || 0, wagerAmount) : current.biggestGambitWin || 0, biggestGambitLoss: !made ? Math.max(current.biggestGambitLoss || 0, wagerAmount) : current.biggestGambitLoss || 0 })); setPlayoffResult(made ? "made" : "missed"); }, 7700); }
 
   function useCoachChallenge() {
     if (!challengeOffer || upgrades.coachChallenge <= 0) return;
@@ -878,7 +917,15 @@ export default function BasketballGame() {
         setLastShotMultiplier(hotHandMult);
         setStreak(nextStreak);
         setOpenLookCooldown(openLookCooldownAfterShot);
-        setBestStreak((current) => Math.max(current, nextStreak));
+        if (made) {
+          setCareerMakeStreak((current) => {
+            const nextCareerStreak = current + 1;
+            setBestStreak((best) => Math.max(best, nextCareerStreak));
+            return nextCareerStreak;
+          });
+        } else {
+          setCareerMakeStreak(0);
+        }
         setCareerStats((current) => ({
             ...current,
             largestSingleBall: made ? Math.max(current.largestSingleBall || 0, earned) : current.largestSingleBall || 0,
@@ -888,7 +935,7 @@ export default function BasketballGame() {
             heaterShots: (current.heaterShots || 0) + (wasOnHeater ? 1 : 0),
             biggestRound: Math.max(current.biggestRound || 0, tripPointsEarned + earned),
             mostExpensiveMiss: !made ? Math.max(current.mostExpensiveMiss || 0, potentialMissValue) : current.mostExpensiveMiss || 0,
-            brickTax: (current.brickTax || 0) + (!made ? 1 : 0),
+            brickTax: (current.brickTax || 0) + (!made ? potentialMissValue : 0),
             makesByShot: made ? { ...(current.makesByShot || {}), [shot.id]: ((current.makesByShot || {})[shot.id] || 0) + 1 } : current.makesByShot || {},
             moneyByShot: made ? { ...(current.moneyByShot || {}), [shot.id]: ((current.moneyByShot || {})[shot.id] || 0) + earned } : current.moneyByShot || {},
           }));
@@ -984,6 +1031,7 @@ export default function BasketballGame() {
     setUpgrades({ extraShots: 0, layup: 0, freeThrow: 0, three: 0, halfCourt: 0, freeThrowUnlocked: false, threeUnlocked: false, halfCourtUnlocked: false, layupSpecialist: 0, freeThrowSpecialist: 0, threeSpecialist: 0, halfCourtSpecialist: 0, hotHand: 0, doubleRim: 0, goldenBall: 0, moveBall: 0, playoffTicket: 0, doubleOrNothing: 0, superGolden: 0, coachChallenge: 0, courtVision: 0 });
     setHasWon(false);
     setBestStreak(0);
+    setCareerMakeStreak(0);
     setShotHistory([]);
     setCareerStats({
       largestSingleBall: 0,
@@ -1081,10 +1129,10 @@ export default function BasketballGame() {
     ...Object.values(SHOT_CONFIG).map((shot) => ({ type: "shotUpgrade", key: `${shot.id}Bundle`, title: shot.label, locked: shot.id !== "layup" && !upgrades[`${shot.id}Unlocked`], unlockCost: shot.unlockCost, unlockAction: () => unlockShot(shot.id), accuracyCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotOdds(shot.id)}%` : "Locked", accuracyAdd: "+5% make", accuracyCost: shot.costs[upgrades[shot.id]] || 0, accuracyLevel: upgrades[shot.id], accuracyMax: shot.costs.length, accuracyAction: () => buyUpgrade(shot.id, shot.costs[upgrades[shot.id]], shot.costs.length), valueCurrent: shot.id === "layup" || upgrades[`${shot.id}Unlocked`] ? `${getShotValue(shot)} pts` : "Locked", valueAdd: `+${shot.points} pts`, valueCost: SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]] || 0, valueLevel: upgrades[`${shot.id}Specialist`], valueMax: SPECIALIST_LEVEL_CAPS[shot.id], valueAction: () => buyUpgrade(`${shot.id}Specialist`, SPECIALIST_COSTS[upgrades[`${shot.id}Specialist`]], SPECIALIST_LEVEL_CAPS[shot.id]) })),
     { type: "section", title: "Bonus Stuff", theme: "neutral" },
     { type: "singleTrack", key: "hotHand", theme: "hot", title: "Hot Hand", label: "Streak Multiplier", locked: upgrades.hotHand === 0, current: upgrades.hotHand === 0 ? "Locked" : `Up to x${HOT_HAND_MULTS[upgrades.hotHand - 1]}`, add: upgrades.hotHand === 0 ? "Unlock x2" : upgrades.hotHand >= HOT_HAND_COSTS.length ? "Maxed" : `Unlock x${HOT_HAND_MULTS[upgrades.hotHand]}`, note: "Hot Hand: Make 2 in a row to get hot. From the 3rd make on, streaks unlock big multipliers.\nThis is where the real points come from.", cost: HOT_HAND_COSTS[upgrades.hotHand] || 0, level: upgrades.hotHand, max: HOT_HAND_COSTS.length, action: () => buyUpgrade("hotHand", HOT_HAND_COSTS[upgrades.hotHand], HOT_HAND_COSTS.length) },
-    { type: "singleTrack", key: "courtVision", theme: "vision", title: "Court Vision", label: "Open Look Chance", locked: upgrades.courtVision === 0, current: upgrades.courtVision === 0 ? "Locked" : `${COURT_VISION_CHANCES[upgrades.courtVision - 1]}%`, add: upgrades.courtVision === 0 ? "Unlock 25%" : upgrades.courtVision >= COURT_VISION_COSTS.length ? "Maxed" : `Next ${COURT_VISION_CHANCES[upgrades.courtVision]}%`, note: `Court Vision: Creates random Open Looks that boost one shot's odds.\nTake the glowing shot for +25% points and a better chance to hit.`, cost: COURT_VISION_COSTS[upgrades.courtVision] || 0, level: upgrades.courtVision, max: COURT_VISION_COSTS.length, action: () => buyUpgrade("courtVision", COURT_VISION_COSTS[upgrades.courtVision], COURT_VISION_COSTS.length) },
-    { type: "singleTrack", key: "doubleRim", theme: "rim", title: "Rim Rescue", label: "Rim Rescue Chance", locked: upgrades.doubleRim === 0, current: upgrades.doubleRim === 0 ? "Locked" : `${doubleRimChance}%`, add: upgrades.doubleRim === 0 ? "Unlock 5%" : "+5%", note: "Rim Rescue: Gives some misses a chance to bounce in.\nIt saves streaks, saves rounds, and turns ugly shots into lucky buckets.", cost: DOUBLE_RIM_COSTS[upgrades.doubleRim] || 0, level: upgrades.doubleRim, max: DOUBLE_RIM_COSTS.length, action: () => buyUpgrade("doubleRim", DOUBLE_RIM_COSTS[upgrades.doubleRim], DOUBLE_RIM_COSTS.length) },
     { type: "singleTrack", key: "goldenBall", theme: "golden", title: "Golden Ball", label: "Golden Chance", locked: upgrades.goldenBall === 0, current: upgrades.goldenBall === 0 ? "Locked" : `${goldenChance}%`, add: upgrades.goldenBall === 0 ? "Unlock 3%" : "+3%", note: "Golden Ball: Gives made shots a chance to go gold for x5.\nEvery bucket gets jackpot potential.", cost: GOLDEN_BALL_COSTS[upgrades.goldenBall] || 0, level: upgrades.goldenBall, max: GOLDEN_BALL_COSTS.length, action: () => buyUpgrade("goldenBall", GOLDEN_BALL_COSTS[upgrades.goldenBall], GOLDEN_BALL_COSTS.length) },
     ...(upgrades.goldenBall >= GOLDEN_BALL_COSTS.length ? [{ type: "singleTrack", key: "superGolden", theme: "golden", title: "Super Golden", label: "Golden Upgrade", locked: upgrades.superGolden === 0, current: upgrades.superGolden === 0 ? "Locked" : "Unlocked", add: upgrades.superGolden === 0 ? "Unlock x10" : "Maxed", note: "Super Golden: Gives golden makes a chance to become x10.\nRare, flashy, and built to break the bank.", cost: upgrades.superGolden === 0 ? SUPER_GOLDEN_COST : 0, level: upgrades.superGolden, max: 1, action: () => buyUpgrade("superGolden", SUPER_GOLDEN_COST, 1) }] : []),
+    { type: "singleTrack", key: "doubleRim", theme: "rim", title: "Rim Rescue", label: "Rim Rescue Chance", locked: upgrades.doubleRim === 0, current: upgrades.doubleRim === 0 ? "Locked" : `${doubleRimChance}%`, add: upgrades.doubleRim === 0 ? "Unlock 5%" : "+5%", note: "Rim Rescue: Gives some misses a chance to bounce in.\nIt saves streaks, saves rounds, and turns ugly shots into lucky buckets.", cost: DOUBLE_RIM_COSTS[upgrades.doubleRim] || 0, level: upgrades.doubleRim, max: DOUBLE_RIM_COSTS.length, action: () => buyUpgrade("doubleRim", DOUBLE_RIM_COSTS[upgrades.doubleRim], DOUBLE_RIM_COSTS.length) },
+    { type: "singleTrack", key: "courtVision", theme: "vision", title: "Court Vision", label: "Open Look Chance", locked: upgrades.courtVision === 0, current: upgrades.courtVision === 0 ? "Locked" : `${COURT_VISION_CHANCES[upgrades.courtVision - 1]}%`, add: upgrades.courtVision === 0 ? "Unlock 25%" : upgrades.courtVision >= COURT_VISION_COSTS.length ? "Maxed" : `Next ${COURT_VISION_CHANCES[upgrades.courtVision]}%`, note: `Court Vision: Creates random Open Looks that boost one shot's odds.\nTake the glowing shot for +25% points and a better chance to hit.`, cost: COURT_VISION_COSTS[upgrades.courtVision] || 0, level: upgrades.courtVision, max: COURT_VISION_COSTS.length, action: () => buyUpgrade("courtVision", COURT_VISION_COSTS[upgrades.courtVision], COURT_VISION_COSTS.length) },
     { type: "singleTrack", key: "coachChallenge", theme: "challenge", title: "Coach’s Challenge", label: "Redo Token", locked: upgrades.coachChallenge === 0, current: upgrades.coachChallenge > 0 ? "1 of 1 Ready" : "0 of 1 Held", add: upgrades.coachChallenge > 0 ? "Max 1 held" : "Purchase 1 of 1", note: "Coach’s Challenge: Buy one redo and save it for a miss.\nErase the mistake, retake the shot, and keep the run alive.", cost: COACH_CHALLENGE_COST, level: upgrades.coachChallenge, max: 1, action: () => buyUpgrade("coachChallenge", COACH_CHALLENGE_COST, 1) },
     { type: "section", title: "Mystery / Trophy", theme: "mystery" }, { type: "playoff" }, { type: "trophy" },
   ];
@@ -1098,18 +1146,17 @@ export default function BasketballGame() {
           <div className="absolute right-[-20%] top-[20%] h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
         </div>
 
-        <Card className="relative w-full h-[96dvh] border border-yellow-300/45 bg-slate-950 p-3 text-center shadow-[0_0_42px_rgba(250,204,21,0.18)] overflow-hidden flex flex-col">
+        <Card className="relative w-full h-[98dvh] mt-0 border border-yellow-300/45 bg-slate-950 p-2 text-center shadow-[0_0_42px_rgba(250,204,21,0.18)] overflow-hidden flex flex-col">
           <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-yellow-300 via-orange-300 to-sky-300" />
           <div className="shrink-0 relative z-10">
-            <CrownIcon />
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <p className="mt-2 text-[9px] uppercase tracking-[0.28em] font-black text-yellow-200/80">Crown Claimed</p>
-              <h1 className="mt-1 text-[34px] font-black uppercase leading-[0.86] tracking-[-0.055em] text-white drop-shadow-[0_3px_0_rgba(15,23,42,0.95)]">Winner</h1>
+              <h1 className="mt-0.5 text-[31px] font-black uppercase leading-[0.86] tracking-[-0.055em] text-white drop-shadow-[0_3px_0_rgba(15,23,42,0.95)]">Winner <span className="inline-block text-yellow-300 drop-shadow-[0_0_10px_rgba(250,204,21,0.75)]">♛</span></h1>
               <p className="mt-2 rounded-2xl border border-yellow-300/20 bg-yellow-300/8 px-3 py-2 text-[11px] font-black leading-snug text-yellow-100">You finished the grind and earned the crown.</p>
             </motion.div>
           </div>
 
-          <div className="relative z-10 mt-3 rounded-[28px] border border-yellow-300/20 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.13),rgba(15,23,42,0.94)_42%,rgba(2,6,23,0.98))] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_30px_rgba(250,204,21,0.08)] overflow-hidden flex-1 min-h-0">
+          <div className="relative z-10 mt-1.5 rounded-[28px] border border-yellow-300/20 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.13),rgba(15,23,42,0.94)_42%,rgba(2,6,23,0.98))] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_30px_rgba(250,204,21,0.08)] overflow-hidden flex-1 min-h-0">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-yellow-300/60 to-transparent" />
             <div className="absolute -left-10 top-12 h-24 w-24 rounded-full bg-sky-400/8 blur-2xl" />
             <div className="absolute -right-10 bottom-12 h-24 w-24 rounded-full bg-orange-400/8 blur-2xl" />
@@ -1122,23 +1169,55 @@ export default function BasketballGame() {
 
             <p className="mb-2 text-[10px] font-bold leading-snug text-slate-400 text-center">The grind is over. Tap each card for the bonus scenes from your run.</p>
 
-            <div className="grid grid-cols-3 gap-1.5">
-              <CrownRevealTile name="Biggest Bucket" value={`+${formatNumber(crownStats?.largestSingleBall || 0)}`} detail="One ball went nuclear. Biggest single payout." tone="green" />
-              <CrownRevealTile name="Time on Heater" value={formatNumber(crownStats?.heaterShots || 0)} detail="You got cooking. Shots taken while hot." tone="red" />
-              <CrownRevealTile name="Biggest Round" value={`+${formatNumber(crownStats?.biggestRound || 0)}`} detail="Best trip of the run. Biggest round total." tone="orange" />
-              <CrownRevealTile name="Money Maker" value={crownStats?.bestLocationByMoney?.label || "None"} detail={`${crownStats?.bestLocationByMoney?.label || "No shot"} was your cash cow.`} tone="emerald" />
-              <CrownRevealTile name="Gold Rush" value={formatNumber(crownStats?.totalGoldenBalls || 0)} detail="The shiny ones kept showing up." tone="yellow" />
-              <CrownRevealTile name="Crown Jewels" value={formatNumber(crownStats?.totalSuperGoldenBalls || 0)} detail="Rare air. Super Goldens collected." tone="white" />
-              <CrownRevealTile name="Rim Bailouts" value={formatNumber(crownStats?.rimSaves || 0)} detail="The rim absolutely had your back." tone="emerald" />
-              <CrownRevealTile name="Brick Tax" value={formatNumber(crownStats?.brickTax || 0)} detail="Every legend pays the tax." tone="violet" />
-              <CrownRevealTile name="Got Away" value={`+${formatNumber(crownStats?.mostExpensiveMiss || 0)}`} detail="This one still bugs you." tone="red" />
+            <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1 pb-14 max-h-full">
+              <CrownRevealTile name="Biggest Bucket" value={`${formatNumber(crownStats?.largestSingleBall || 0)} pts`} detail="Biggest Bucket: Most points scored from one made shot. Bang. Rent paid." tone="green" />
+              <CrownRevealTile name="Best Streak" value={`${formatNumber(crownStats?.bestStreak || 0)} in a row`} detail="Best Streak: Longest streak of consecutive made shots (multi round total). Your all time heater." tone="red" />
+              <CrownRevealTile name="Biggest Round" value={`${formatNumber(crownStats?.biggestRound || 0)} pts`} detail="Biggest Round: Most points scored in one court trip. One trip, pure damage." tone="orange" />
+              <CrownRevealTile name="Money Maker" value={crownStats?.bestLocationByMoney?.label || "None"} detail={`Money Maker: Shot location that earned you the most points. ${crownStats?.bestLocationByMoney?.label || "No shot"} paid the bills.`} tone="emerald" />
+              <CrownRevealTile name="Gold Rush" value={`${formatNumber(crownStats?.totalGoldenBalls || 0)} golds`} detail="Gold Rush: Total Golden shots made. Shiny buckets hit different." tone="yellow" />
+              <CrownRevealTile name="Crown Jewels" value={`${formatNumber(crownStats?.totalSuperGoldenBalls || 0)} SGs`} detail="Crown Jewels: Total Super Golden shots made. Luxury buckets only." tone="white" />
+              <CrownRevealTile name="Rim Bailouts" value={`${formatNumber(crownStats?.rimSaves || 0)} saves`} detail="Rim Bailouts: Misses that bounced in because of Rim Rescue. The rim had your back." tone="emerald" />
+              <CrownRevealTile name="Brick Tax" value={`${formatNumber(crownStats?.brickTax || 0)} pts`} detail="Brick Tax: Total points left behind on missed shots. Every legend pays the tax." tone="violet" />
+              <CrownRevealTile name="The One That Got Away" value={`${formatNumber(crownStats?.mostExpensiveMiss || 0)} pts`} detail="The One That Got Away: Biggest point swing missed on a single shot. You still think about this one." tone="red" />
+              <CrownRevealTile name="Gambit Swing" value={`+${formatNumber(crownStats?.biggestGambitWin || 0)} / -${formatNumber(crownStats?.biggestGambitLoss || 0)} pts`} detail="Gambit Swing: Biggest DeepCourt Gambit win and biggest DeepCourt Gambit loss. Live and die by the gamble." tone="violet" />
             </div>
           </div>
 
-          <div className="relative z-10 mt-3 grid grid-cols-2 gap-2 shrink-0">
+          <div className="relative z-10 mt-2 grid grid-cols-2 gap-2 shrink-0">
             <button type="button" onClick={() => setScreen("lockerRoom")} className="rounded-2xl border border-sky-200/60 bg-sky-500 px-4 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_18px_rgba(14,165,233,0.35)] active:scale-[0.98]">Locker Room</button>
             <button type="button" onClick={() => setScreen("title")} className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-black uppercase tracking-wide text-slate-200 active:scale-[0.98]">Main Menu</button>
           </div>
+        {justClaimedCrown && <div className="pointer-events-none absolute inset-0 z-[90] overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.25, y: 64, rotate: -14 }}
+            animate={{ opacity: [0, 1, 1, 1, 0], scale: [0.25, 2.45, 2.25, 2.25, 0.28], x: [0, 0, 0, 0, 138], y: [64, -8, -8, -8, -292], rotate: [-14, 7, -4, -4, 6] }}
+            transition={{ duration: 5.05, ease: "easeInOut", times: [0, 0.12, 0.72, 0.9, 1] }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[132px] drop-shadow-[0_0_44px_rgba(250,204,21,0.98)]"
+          >♛</motion.div>
+          {Array.from({ length: 176 }).map((_, index) => {
+            const source = index % 4;
+            const delay = (index % 92) * 0.044;
+            const colorClass = index % 9 === 0 ? "bg-yellow-300" : index % 9 === 1 ? "bg-orange-400" : index % 9 === 2 ? "bg-sky-300" : index % 9 === 3 ? "bg-emerald-300" : index % 9 === 4 ? "bg-fuchsia-300" : index % 9 === 5 ? "bg-red-300" : index % 9 === 6 ? "bg-violet-300" : index % 9 === 7 ? "bg-cyan-200" : "bg-white";
+            const shapeClass = index % 3 === 0 ? "h-5 w-2.5" : index % 3 === 1 ? "h-2.5 w-5" : "h-4 w-4";
+            const spin = 540 + (index % 13) * 54;
+            if (source === 0) {
+              const startX = (index * 37) % 106 - 3;
+              const drift = (index % 2 ? 1 : -1) * (8 + (index % 19));
+              return <motion.span key={`rain-top-${index}`} initial={{ opacity: 0, y: -38, x: `${startX}vw`, rotate: index * 11, scale: 0.75 + (index % 6) * 0.12 }} animate={{ opacity: [0, 1, 1, 0], y: [-38, 210 + (index % 11) * 22, 540 + (index % 17) * 18], x: [`${startX}vw`, `${startX + drift}vw`, `${startX + drift * 1.25}vw`], rotate: [0, spin, spin + 360] }} transition={{ duration: 1.35 + (index % 6) * 0.07, ease: "easeOut", delay }} className={`absolute top-0 rounded-sm ${shapeClass} ${colorClass}`} />;
+            }
+            if (source === 1) {
+              const startY = (index * 41) % 108 - 4;
+              return <motion.span key={`rain-left-${index}`} initial={{ opacity: 0, x: -30, y: `${startY}vh`, rotate: index * 13, scale: 0.75 + (index % 6) * 0.12 }} animate={{ opacity: [0, 1, 1, 0], x: [-30, 150 + (index % 12) * 12, 430 + (index % 9) * 16], y: [`${startY}vh`, `${startY + ((index % 2 ? 1 : -1) * (8 + index % 16))}vh`], rotate: [0, spin, spin + 330] }} transition={{ duration: 1.3 + (index % 5) * 0.07, ease: "easeOut", delay }} className={`absolute left-0 rounded-sm ${shapeClass} ${colorClass}`} />;
+            }
+            if (source === 2) {
+              const startY = (index * 43) % 108 - 4;
+              return <motion.span key={`rain-right-${index}`} initial={{ opacity: 0, x: 30, y: `${startY}vh`, rotate: index * -13, scale: 0.75 + (index % 6) * 0.12 }} animate={{ opacity: [0, 1, 1, 0], x: [30, -150 - (index % 12) * 12, -430 - (index % 9) * 16], y: [`${startY}vh`, `${startY + ((index % 2 ? -1 : 1) * (8 + index % 16))}vh`], rotate: [0, -spin, -spin - 330] }} transition={{ duration: 1.3 + (index % 5) * 0.07, ease: "easeOut", delay }} className={`absolute right-0 rounded-sm ${shapeClass} ${colorClass}`} />;
+            }
+            const startX = (index * 31) % 106 - 3;
+            const drift = (index % 2 ? -1 : 1) * (9 + (index % 18));
+            return <motion.span key={`rain-bottom-${index}`} initial={{ opacity: 0, y: 40, x: `${startX}vw`, rotate: index * -11, scale: 0.75 + (index % 6) * 0.12 }} animate={{ opacity: [0, 1, 1, 0], y: [40, -170 - (index % 9) * 20, -420 - (index % 12) * 18], x: [`${startX}vw`, `${startX + drift}vw`, `${startX + drift * 1.25}vw`], rotate: [0, -spin, -spin - 360] }} transition={{ duration: 1.35 + (index % 6) * 0.07, ease: "easeOut", delay }} className={`absolute bottom-0 rounded-sm ${shapeClass} ${colorClass}`} />;
+          })}
+        </div>}
         </Card>
       </div>
     </Shell>
@@ -1159,7 +1238,7 @@ export default function BasketballGame() {
               <button type="button" onClick={() => setScreen("title")} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-black text-slate-300 active:scale-[0.98]">Back</button>
             </div>
 
-            <div className="mt-4 rounded-3xl border border-orange-300/25 bg-gradient-to-r from-orange-500/12 via-sky-500/10 to-yellow-400/10 p-3 text-center shadow-inner">
+            <div className="mt-4 rounded-3xl border border-orange-300/25 bg-gradient-to-r from-orange-500/12 via-sky-500/10 to-yellow-400/10 p-2 text-center shadow-inner">
               <p className="text-[11px] uppercase tracking-[0.22em] font-black text-orange-200">Shoot • Score • Upgrade • Repeat</p>
             </div>
 
@@ -1357,7 +1436,7 @@ export default function BasketballGame() {
             </div>
           </div>
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
+        <div className="mt-2 grid grid-cols-2 gap-2 overflow-y-auto pr-1 pb-14 max-h-full">
             <button type="button" onClick={() => setLockerScreen("shots")} className={`rounded-xl border px-2 py-2 text-[10px] font-black active:scale-[0.98] ${lockerScreen === "shots" ? "bg-orange-500 border-orange-300 text-white shadow-[0_0_14px_rgba(249,115,22,0.45)]" : "bg-slate-950 border-slate-700 text-slate-400"}`}>
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-base leading-none">🏀</span>
@@ -1378,7 +1457,7 @@ export default function BasketballGame() {
             </button>
           </div><div className="mt-2 flex-1 min-h-0 overflow-y-scroll overscroll-contain touch-pan-y pr-1 [-webkit-overflow-scrolling:touch]"><div className="grid grid-cols-2 gap-2 pb-0">{shopItems.filter(Boolean).filter((item) => {
                 if (lockerScreen === "shots") return item.key === "extraShots" || item.type === "shotUpgrade";
-                if (lockerScreen === "bonus") return ["hotHand", "courtVision", "coachChallenge", "doubleRim", "goldenBall", "superGolden"].includes(item.key);
+                if (lockerScreen === "bonus") return ["hotHand", "goldenBall", "superGolden", "doubleRim", "courtVision", "coachChallenge"].includes(item.key);
                 if (lockerScreen === "mystery") return item.type === "playoff" || item.type === "trophy";
                 return true;
               }).map((item, index) => { if (item.type === "section") { const t = THEME[item.theme] || THEME.lab; return <div key={`section-${index}`} className={`col-span-2 mt-2 first:mt-0 rounded-xl border px-3 py-2 ${t.header}`}><p className="text-[9px] uppercase tracking-[0.2em] font-black">{item.title}</p></div>; } if (item.type === "singleTrack") return <SingleTrackUpgradeCard key={item.key} {...item} onBuy={item.action} currentPoints={currentPoints} />; if (item.type === "shotUpgrade") return <ShotUpgradeCard key={item.key} title={item.title} theme="lab" accuracyCurrent={item.accuracyCurrent} accuracyAdd={item.accuracyAdd} accuracyCost={item.accuracyCost} accuracyLevel={item.accuracyLevel} accuracyMax={item.accuracyMax} onBuyAccuracy={item.accuracyAction} valueCurrent={item.valueCurrent} valueAdd={item.valueAdd} valueCost={item.valueCost} valueLevel={item.valueLevel} valueMax={item.valueMax} onBuyValue={item.valueAction} currentPoints={currentPoints} locked={!!item.locked} unlockCost={item.unlockCost ?? 0} onUnlock={item.unlockAction} />; if (item.type === "playoff") return <div key="playoff" onClick={(event) => event.stopPropagation()} className="col-span-2 rounded-xl border border-white/20 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(88,28,135,0.28),rgba(30,64,175,0.22),rgba(5,150,105,0.18),rgba(202,138,4,0.18),rgba(190,24,93,0.2))] p-3.5 shadow-[0_0_24px_rgba(255,255,255,0.06)]"><div className="flex items-start justify-between gap-3"><div><p className="text-base font-black text-white">DeepCourt Gambit</p><p className="mt-1 text-[11px] leading-snug text-slate-300">Enter the challenge, place your wager, and take the deep shot.</p></div><div className="rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 text-center"><p className="text-lg font-black leading-none text-white">{currentPoints >= PLAYOFF_TICKET_COST ? `${doubleOrNothingChance}%` : "?"}</p><p className="text-[7px] uppercase tracking-wide font-black text-slate-300">Make</p></div></div><button type="button" disabled={currentPoints < PLAYOFF_TICKET_COST} onClick={openPlayoffDoor} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${currentPoints < PLAYOFF_TICKET_COST ? "bg-slate-800 text-slate-500" : "bg-white/12 hover:bg-white/18 text-white border border-white/20"}`}>{currentPoints >= PLAYOFF_TICKET_COST ? "Enter Challenge" : `Reach ${formatNumber(PLAYOFF_TICKET_COST)} pts`}</button>{currentPoints >= PLAYOFF_TICKET_COST && <><div className="my-3 flex items-center gap-2"><div className="h-px flex-1 bg-white/12" /><span className="text-[8px] uppercase tracking-[0.18em] font-black text-slate-400">Upgrade</span><div className="h-px flex-1 bg-white/12" /></div><button type="button" disabled={upgrades.doubleOrNothing > 0 || currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST} onClick={buyDoubleOrNothingUpgrade} className={`mt-2 w-full rounded-xl px-3 py-2 text-xs font-black ${upgrades.doubleOrNothing > 0 ? "bg-emerald-700/40 text-emerald-200" : currentPoints < DOUBLE_OR_NOTHING_UPGRADE_COST ? "bg-slate-800 text-slate-500" : confirmDoubleOrNothingUpgrade ? "bg-red-500 hover:bg-red-600 text-white" : "bg-violet-500 hover:bg-violet-600 text-white"}`}>{upgrades.doubleOrNothing > 0 ? "50% Unlocked" : confirmDoubleOrNothingUpgrade ? "Are you sure? Tap again" : `Upgrade to 50% • ${formatNumber(DOUBLE_OR_NOTHING_UPGRADE_COST)} pts`}</button></>}</div>; if (item.type === "trophy") return <TrophyCard key="trophy" title="The Crown" text="The finish line. Reach the mark, claim the crown, win the grind." buttonText={currentPoints >= TROPHY_COST ? "Claim the Crown" : `Reach ${formatNumber(TROPHY_COST)} pts`} disabled={currentPoints < TROPHY_COST} maxed={hasWon} onClick={buyTrophy} className="bg-gradient-to-br from-yellow-300/22 via-amber-400/22 to-orange-500/20 border-yellow-300/55 shadow-[0_0_28px_rgba(250,204,21,0.16)]" titleClassName="text-yellow-200" buttonClassName="bg-yellow-400 hover:bg-yellow-500 text-slate-950" />; return null; })}</div></div></Card></Shell>;
@@ -1483,11 +1562,11 @@ export default function BasketballGame() {
                 <p className="mt-1 text-5xl font-black leading-none text-green-300 drop-shadow-[0_0_14px_rgba(134,239,172,0.65)]">+{formatNumber(tripPointsEarned)}</p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-slate-400">pts earned</p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button type="button" onClick={runItBack} className="pointer-events-auto rounded-2xl border-2 border-orange-200/80 bg-orange-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(249,115,22,0.55)] active:scale-[0.97]">Try Again</button>
+                  <button type="button" onClick={runItBack} className="pointer-events-auto rounded-2xl border-2 border-orange-200/80 bg-orange-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(249,115,22,0.55)] active:scale-[0.97]">Keep Shooting</button>
                   <button type="button" onClick={goLockerRoom} className="pointer-events-auto rounded-2xl border-2 border-sky-200/80 bg-sky-500 px-3 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_20px_rgba(14,165,233,0.55)] active:scale-[0.97]">Hit the Showers</button>
                 </div>
               </div>
-            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-3 gap-1.5 mt-1">
+            </motion.div>}</motion.div></Card><div className="rounded-xl bg-slate-950 border border-slate-700 px-2 py-1.5 shadow-xl -mt-1"><div className="flex items-center justify-between gap-2"><div><p className="text-[9px] uppercase tracking-wide text-slate-500 font-black">Scoreboard</p><p className="text-lg font-black leading-none mt-0.5">{formatNumber(currentPoints)} <span className="text-[11px] font-black text-slate-400 align-middle">pts</span></p></div><button type="button" onClick={goLockerRoom} className="rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-black px-2.5 py-1.5 text-[11px] shadow-lg active:scale-95">Locker Room</button></div><div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1 pb-14 max-h-full mt-1">
 
             <button type="button" onClick={challengeOffer ? useCoachChallenge : upgrades.coachChallenge <= 0 ? () => showLockedPrompt("Challenge") : undefined} disabled={false} className={`h-[60px] rounded-xl border px-2 py-1.5 text-center relative overflow-hidden transition active:scale-[0.98] flex flex-col items-center justify-center ${challengeOffer ? "bg-cyan-500/90 border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.75)] animate-pulse" : upgrades.coachChallenge > 0 ? "bg-cyan-950/60 border-cyan-400/60 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.25)]" : "bg-slate-900/80 border-slate-700 text-slate-500"}`}>
               <p className="text-[10px] uppercase tracking-wide font-black leading-none opacity-80">{upgrades.coachChallenge > 0 ? "📋 Challenge" : "Challenge"}</p>
