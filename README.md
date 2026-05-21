@@ -1,6 +1,6 @@
 # Heaterball
 
-Bare-bones Vite + React + Tailwind export for Vercel.
+Deploy-ready Vite React export from the current working Canvas build.
 
 ## Local run
 
@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-## Vercel settings
+## Vercel
 
 - Framework Preset: Vite
 - Build Command: npm run build
