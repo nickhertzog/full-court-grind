@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const EXPORT_MARKER = "HB_EXPORT_2026_05_21_CANVAS_PARITY";
 const TROPHY_COST = 100000;
 const PLAYOFF_TICKET_COST = 10000;
 const DOUBLE_OR_NOTHING_UPGRADE_COST = 20000;
